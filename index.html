@@ -2,78 +2,92 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
 <title>로또 6/45 분석기</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div><span class="badge">LOTTO 6/45</span><h1>로또 통계 분석기</h1></div>
-    <button id="sampleBtn">샘플 데이터</button>
-  </header>
+<header><div><span class="badge">LOTTO 6/45</span><h1>로또 통계 분석기</h1></div></header>
 
-  <section class="panel">
-    <h2>당첨번호 입력</h2>
-    <p class="hint">한 줄에: 회차, 날짜(YYYY-MM-DD), 번호 6개, 보너스. 예) 1236,2026-08-15,1,7,12,23,34,41,10</p>
-    <textarea id="data" rows="8" placeholder="1236,2026-08-15,1,7,12,23,34,41,10"></textarea>
-    <div class="actions">
-      <button class="primary" id="analyzeBtn">분석하기</button>
-      <button id="clearBtn">초기화</button>
+<section class="latest panel">
+  <div class="latestTop">
+    <div><div class="eyebrow">최신 당첨 결과</div><h2 id="latestDraw">데이터 확인 중...</h2></div>
+    <div id="updateStatus" class="status checking">업데이트 확인 중</div>
+  </div>
+  <div id="latestNumbers" class="latestNumbers"></div>
+  <div id="updateDetail" class="updateDetail"></div>
+</section>
+
+<section class="panel">
+  <h2>당첨번호 입력</h2>
+  <p class="hint">형식: 회차 - 당첨번호 6개 - 보너스번호</p>
+  <textarea id="data" rows="8" placeholder="1237 - 10 20 23 34 37 40 - 36"></textarea>
+  <div class="actions">
+    <button class="primary" id="analyzeBtn">분석하기</button>
+    <button id="reloadBtn">최신 데이터 다시 읽기</button>
+    <button id="clearBtn">초기화</button>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="row">
+    <div><h2>분석 기간</h2>
+      <select id="period">
+        <option value="52">최근 1년</option>
+        <option value="26">최근 6개월</option>
+        <option value="13">최근 3개월</option>
+        <option value="10">최근 10회</option>
+        <option value="20">최근 20회</option>
+        <option value="30">최근 30회</option>
+        <option value="all">전체</option>
+      </select>
     </div>
-  </section>
+    <div class="grow"><h2>제외 번호</h2><input id="exclude" placeholder="예: 5,10,16,17,23"></div>
+  </div>
+</section>
 
-  <section class="panel">
-    <div class="row">
-      <div>
-        <h2>분석 기간</h2>
-        <select id="period">
-          <option value="365">최근 1년</option>
-          <option value="183">최근 6개월</option>
-          <option value="92">최근 3개월</option>
-          <option value="10">최근 10회</option>
-          <option value="20">최근 20회</option>
-          <option value="30">최근 30회</option>
-          <option value="all">전체</option>
-        </select>
-      </div>
-      <div class="grow">
-        <h2>제외 번호</h2>
-        <input id="exclude" placeholder="예: 5,10,16,17,23">
-      </div>
-    </div>
-  </section>
+<section class="panel">
+  <h2>1~10등급 <small>(출현 횟수 → 번호순)</small></h2>
+  <div id="grades" class="grades empty">데이터를 불러오는 중입니다.</div>
+</section>
 
-  <section class="panel">
-    <h2>1~10등급 <small>(출현 횟수 → 최근 출현 → 번호순)</small></h2>
-    <div id="grades" class="grades empty">데이터를 입력하고 분석하기를 누르세요.</div>
-  </section>
+<section class="panel">
+  <div class="rankHead">
+    <div><h2>출현 횟수 순위</h2><p class="hint" id="rankPeriodLabel">선택 기간 기준</p></div>
+    <div id="totalHits" class="totalHits"></div>
+  </div>
+  <div id="frequencyRank" class="frequencyRank empty">데이터를 불러오는 중입니다.</div>
+  <div id="zeroBox" class="zeroBox"></div>
+</section>
 
-  <section class="panel">
-    <h2>번호별 출현 횟수</h2>
-    <div id="balls" class="balls"></div>
-  </section>
+<section class="panel">
+  <div class="row">
+    <div class="grow"><h2>추천 조합</h2><p class="hint">선택 기간의 출현 순위를 가중치로 이용합니다. 당첨을 보장하지 않습니다.</p></div>
+    <select id="setCount"><option>5</option><option selected>10</option><option>20</option></select>
+    <button class="primary" id="generateBtn">조합 생성</button>
+  </div>
+  <div class="saveRow"><button id="saveBtn" disabled>이번 주 추천번호 저장</button><span id="saveInfo" class="hint"></span></div>
+  <div id="sets" class="sets"></div>
+</section>
 
-  <section class="panel">
-    <div class="row">
-      <div class="grow"><h2>추천 조합</h2><p class="hint">통계 가중 랜덤 조합입니다. 당첨을 보장하지 않습니다.</p></div>
-      <select id="setCount"><option>5</option><option selected>10</option><option>20</option></select>
-      <button class="primary" id="generateBtn">조합 생성</button>
-    </div>
-    <div id="sets" class="sets"></div>
-  </section>
+<section class="panel">
+  <h2>지난 추천번호 자동 대조</h2>
+  <div id="savedCheck" class="empty">저장된 추천번호가 없습니다.</div>
+</section>
 
-  <section class="panel">
-    <h2>추천번호 당첨 대조</h2>
-    <div class="row">
-      <input class="grow" id="winning" placeholder="당첨번호 6개: 1,7,12,23,34,41">
-      <input id="bonus" type="number" min="1" max="45" placeholder="보너스">
-      <button id="checkBtn">대조</button>
-    </div>
-    <div id="checkResult"></div>
-  </section>
+<section class="panel">
+  <h2>직접 당첨번호 대조</h2>
+  <div class="row">
+    <input class="grow" id="winning" placeholder="당첨번호 6개: 1,7,12,23,34,41">
+    <input id="bonus" type="number" min="1" max="45" placeholder="보너스">
+    <button id="checkBtn">대조</button>
+  </div>
+  <div id="checkResult"></div>
+</section>
 
-  <footer>통계는 과거 데이터 요약이며 각 추첨은 독립적입니다.</footer>
+<footer>통계는 과거 데이터 요약이며 각 추첨은 독립적입니다.</footer>
 </div>
 <script src="app.js"></script>
 </body>

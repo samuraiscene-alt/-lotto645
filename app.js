@@ -1,881 +1,240 @@
 let rows = [];
-
+let sourceRows = [];
 let current = [];
-
 let generated = [];
+let latestDrawData = null;
 
 const $ = id => document.getElementById(id);
+const STORAGE_KEY = "lotto645_saved_sets_v2";
 
-/* =========================
-
-   자동 데이터 불러오기
-
-========================= */
-
-async function loadAutoData() {
-
-  try {
-
-    const response = await fetch("./lotto_data.json?t=" + Date.now(), {
-
-      cache: "no-store"
-
-    });
-
-    if (!response.ok) {
-
-      throw new Error("lotto_data.json 없음");
-
-    }
-
-    const data = await response.json();
-
-    if (!Array.isArray(data) || data.length === 0) {
-
-      throw new Error("데이터 없음");
-
-    }
-
-    $("data").value = data
-
-      .map(r => {
-
-        return [
-
-          r.draw,
-
-          r.date,
-
-          ...r.nums,
-
-          r.bonus
-
-        ].join(",");
-
-      })
-
-      .join("\n");
-
-    analyze();
-
-    showStatus(
-
-      `✅ 실제 당첨 데이터 ${data.length}회분 자동 불러오기 완료`
-
-    );
-
-  } catch (error) {
-
-    console.log("자동 데이터 로딩 실패:", error);
-
-    showStatus(
-
-      "⚠️ 자동 당첨 데이터 파일이 아직 없습니다. 다음 단계에서 연결합니다."
-
-    );
-
-  }
-
+function formatInputRow(r){
+  return `${r.draw} - ${r.nums.join(" ")} - ${r.bonus}`;
 }
 
-function showStatus(message) {
-
-  let box = document.getElementById("autoStatus");
-
-  if (!box) {
-
-    box = document.createElement("div");
-
-    box.id = "autoStatus";
-
-    box.style.margin = "10px 0 16px";
-
-    box.style.padding = "12px";
-
-    box.style.borderRadius = "10px";
-
-    box.style.background = "#1c2026";
-
-    box.style.fontSize = "14px";
-
-    const firstPanel = document.querySelector(".panel");
-
-    if (firstPanel) {
-
-      firstPanel.parentNode.insertBefore(box, firstPanel);
-
-    }
-
-  }
-
-  box.textContent = message;
-
+function parseManualLine(line){
+  const parts = line.trim().split(/\s*-\s*/);
+  if(parts.length !== 3) return null;
+  const draw = Number(parts[0].replace(/[^\d]/g,""));
+  const nums = parts[1].trim().split(/[,\s]+/).map(Number).filter(Boolean);
+  const bonus = Number(parts[2].replace(/[^\d]/g,""));
+  if(!draw || nums.length !== 6 || nums.some(n=>n<1||n>45) || bonus<1 || bonus>45) return null;
+  const matched = sourceRows.find(r => r.draw === draw);
+  return {draw, nums, bonus, date: matched?.date || null};
 }
 
-/* =========================
-
-   입력 데이터 해석
-
-========================= */
-
-function parse() {
-
-  rows = $("data").value
-
-    .trim()
-
-    .split(/\n+/)
-
-    .map(line => {
-
-      const p = line
-
-        .split(/[,\s]+/)
-
-        .filter(Boolean);
-
-      if (p.length < 8) return null;
-
-      let draw = +p[0];
-
-      let date = null;
-
-      let start = 1;
-
-      if (/^\d{4}-\d{2}-\d{2}$/.test(p[1])) {
-
-        date = new Date(p[1] + "T00:00:00");
-
-        start = 2;
-
-      }
-
-      const nums = p
-
-        .slice(start, start + 6)
-
-        .map(Number);
-
-      const bonus = +p[start + 6] || null;
-
-      if (
-
-        nums.length !== 6 ||
-
-        nums.some(n => n < 1 || n > 45)
-
-      ) {
-
-        return null;
-
-      }
-
-      return {
-
-        draw,
-
-        date,
-
-        nums,
-
-        bonus
-
-      };
-
-    })
-
-    .filter(Boolean)
-
-    .sort((a, b) => b.draw - a.draw);
-
+function parse(){
+  rows = $("data").value.trim().split(/\n+/).map(parseManualLine).filter(Boolean).sort((a,b)=>b.draw-a.draw);
 }
 
-/* =========================
-
-   분석 기간
-
-========================= */
-
-function filtered() {
-
+function periodCount(){
   const v = $("period").value;
-
-  if (v === "all") {
-
-    return rows;
-
-  }
-
-  if (["10", "20", "30"].includes(v)) {
-
-    return rows.slice(0, +v);
-
-  }
-
-  const dated = rows.filter(r => r.date);
-
-  if (!dated.length) {
-
-    return rows;
-
-  }
-
-  const newest = dated.reduce(
-
-    (m, r) => r.date > m ? r.date : m,
-
-    dated[0].date
-
-  );
-
-  const cutoff = new Date(newest);
-
-  cutoff.setDate(
-
-    cutoff.getDate() - Number(v)
-
-  );
-
-  return rows.filter(
-
-    r => r.date && r.date >= cutoff
-
-  );
-
+  return v === "all" ? Infinity : Number(v);
 }
 
-/* =========================
+function filtered(){
+  const n = periodCount();
+  return Number.isFinite(n) ? rows.slice(0,n) : rows;
+}
 
-   통계 분석
+function periodLabel(){
+  const map = {"52":"최근 1년","26":"최근 6개월","13":"최근 3개월","10":"최근 10회","20":"최근 20회","30":"최근 30회","all":"전체"};
+  return map[$("period").value] || "선택 기간";
+}
 
-========================= */
-
-function analyze() {
-
+function analyze(){
   parse();
-
   current = filtered();
-
   const count = Array(46).fill(0);
-
-  const last = Array(46).fill(-1);
-
-  current.forEach((r, i) => {
-
-    r.nums.forEach(n => {
-
-      count[n]++;
-
-      if (last[n] < 0) {
-
-        last[n] = i;
-
-      }
-
-    });
-
-  });
-
-  const ranked = Array
-
-    .from({ length: 45 }, (_, i) => i + 1)
-
-    .sort((a, b) => {
-
-      return (
-
-        count[b] - count[a] ||
-
-        last[a] - last[b] ||
-
-        a - b
-
-      );
-
-    });
-
-  const grades = Array
-
-    .from({ length: 10 }, () => []);
-
-  ranked.forEach((n, i) => {
-
-    const grade =
-
-      Math.min(
-
-        9,
-
-        Math.floor(i * 10 / 45)
-
-      );
-
-    grades[grade].push(n);
-
-  });
-
-  $("grades").innerHTML =
-
-    grades
-
-      .map((g, i) => {
-
-        return `
-
-          <div class="grade">
-
-            <b>${i + 1}등급</b>
-
-            <div>
-
-              ${g
-
-                .map(
-
-                  n =>
-
-                    `${n}(${count[n]})`
-
-                )
-
-                .join(" · ")}
-
-            </div>
-
-          </div>
-
-        `;
-
-      })
-
-      .join("");
-
-  $("balls").innerHTML =
-
-    Array
-
-      .from(
-
-        { length: 45 },
-
-        (_, i) => i + 1
-
-      )
-
-      .map(n => {
-
-        return `
-
-          <div class="ball">
-
-            <strong>${n}</strong>
-
-            <span>${count[n]}회</span>
-
-          </div>
-
-        `;
-
-      })
-
-      .join("");
-
-  window.stats = {
-
-    count,
-
-    ranked,
-
-    grades
-
-  };
-
+  current.forEach(r => r.nums.forEach(n => count[n]++));
+
+  const ranked = Array.from({length:45},(_,i)=>i+1).sort((a,b)=>count[b]-count[a] || a-b);
+  const grades = Array.from({length:10},()=>[]);
+  ranked.forEach((n,i)=>grades[Math.min(9,Math.floor(i*10/45))].push(n));
+
+  $("grades").innerHTML = grades.map((g,i)=>`
+    <div class="grade">
+      <div class="gradeTitle g${i+1}">${i+1}등급</div>
+      <div class="gradeNums">${g.map(n=>`<span class="gradeNum g${i+1}">${n}(${count[n]})</span>`).join(" · ")}</div>
+    </div>`).join("");
+
+  let rank = 0, prev = null;
+  $("frequencyRank").innerHTML = ranked.map((n,i)=>{
+    if(count[n] !== prev){ rank = i+1; prev = count[n]; }
+    return `<div class="rankItem"><span class="rankNo">${rank}위</span><span class="rankValue">${n}</span><span class="rankCount">${count[n]}회</span></div>`;
+  }).join("");
+
+  const zeroes = ranked.filter(n=>count[n]===0);
+  $("zeroBox").innerHTML = zeroes.length
+    ? `<b>0회 출현</b> · ${zeroes.join(" · ")}`
+    : `<b>0회 출현 번호 없음</b>`;
+
+  $("rankPeriodLabel").textContent = `${periodLabel()} 기준 · 많이 나온 번호부터`;
+  $("totalHits").textContent = `${current.length}회 / ${current.length*6}개 번호`;
+
+  window.stats = {count, ranked, grades};
 }
 
-/* =========================
-
-   제외 번호
-
-========================= */
-
-function excludes() {
-
-  return new Set(
-
-    $("exclude").value
-
-      .split(/[,\s]+/)
-
-      .map(Number)
-
-      .filter(
-
-        n => n >= 1 && n <= 45
-
-      )
-
-  );
-
+function setLatestUI(){
+  if(!latestDrawData) return;
+  $("latestDraw").textContent = `${latestDrawData.draw}회`;
+  $("latestNumbers").innerHTML =
+    latestDrawData.nums.map(n=>`<span class="lottoBall">${n}</span>`).join("") +
+    `<span class="plus">+</span><span class="lottoBall bonusBall">${latestDrawData.bonus}</span>`;
 }
 
-/* =========================
+function setStatus(kind,text,detail=""){
+  const el = $("updateStatus");
+  el.className = `status ${kind}`;
+  el.textContent = text;
+  $("updateDetail").textContent = detail;
+}
 
-   가중 랜덤 추출
+async function loadAutoData(){
+  setStatus("checking","업데이트 확인 중");
+  try{
+    const response = await fetch("./lotto_data.json?t="+Date.now(),{cache:"no-store"});
+    if(!response.ok) throw new Error("lotto_data.json을 읽을 수 없습니다.");
+    const data = await response.json();
+    if(!Array.isArray(data) || !data.length) throw new Error("당첨 데이터가 없습니다.");
 
-========================= */
+    sourceRows = data.map(r=>({
+      draw:Number(r.draw),
+      date:r.date || null,
+      nums:(r.nums||[]).map(Number),
+      bonus:Number(r.bonus)
+    })).filter(r=>r.draw && r.nums.length===6).sort((a,b)=>b.draw-a.draw);
 
-function weightedPick(
+    latestDrawData = sourceRows[0];
+    $("data").value = sourceRows.map(formatInputRow).join("\n");
+    setLatestUI();
+    analyze();
 
-  pool,
+    setStatus("ok","최신 데이터 확인 완료",
+      `현재 ${latestDrawData.draw}회까지 · ${sourceRows.length}회분 저장 · 새 회차는 GitHub 자동 작업이 확인합니다.`);
+    autoCheckSaved();
+  }catch(err){
+    console.error(err);
+    setStatus("warn","업데이트 확인 실패","기존 화면 데이터가 있으면 그대로 사용할 수 있습니다.");
+  }
+}
 
-  weights,
+function excludes(){
+  return new Set($("exclude").value.split(/[,\s]+/).map(Number).filter(n=>n>=1&&n<=45));
+}
 
-  k
-
-) {
-
-  let p = [...pool];
-
-  let out = [];
-
-  while (
-
-    out.length < k &&
-
-    p.length
-
-  ) {
-
-    let total =
-
-      p.reduce(
-
-        (s, n) =>
-
-          s + weights[n],
-
-        0
-
-      );
-
-    let r =
-
-      Math.random() * total;
-
-    let chosen = p[0];
-
-    for (const n of p) {
-
-      r -= weights[n];
-
-      if (r <= 0) {
-
-        chosen = n;
-
-        break;
-
-      }
-
-    }
-
+function weightedPick(pool,weights,k){
+  let p=[...pool], out=[];
+  while(out.length<k && p.length){
+    const total=p.reduce((s,n)=>s+weights[n],0);
+    let r=Math.random()*total, chosen=p[0];
+    for(const n of p){ r-=weights[n]; if(r<=0){chosen=n;break;} }
     out.push(chosen);
-
-    p =
-
-      p.filter(
-
-        n => n !== chosen
-
-      );
-
+    p=p.filter(n=>n!==chosen);
   }
-
-  return out.sort(
-
-    (a, b) => a - b
-
-  );
-
+  return out.sort((a,b)=>a-b);
 }
 
-/* =========================
+function generate(){
+  if(!window.stats) analyze();
+  const ex=excludes();
+  const pool=Array.from({length:45},(_,i)=>i+1).filter(n=>!ex.has(n));
+  if(pool.length<6){ alert("사용 가능한 번호가 6개 미만입니다."); return; }
 
-   추천 조합 생성
+  const weights=Array(46).fill(1);
+  window.stats.ranked.forEach((n,i)=>weights[n]=1+(45-i)/15);
 
-========================= */
-
-function generate() {
-
-  if (!window.stats) {
-
-    analyze();
-
+  generated=[];
+  const cnt=Number($("setCount").value), seen=new Set();
+  while(generated.length<cnt){
+    const s=weightedPick(pool,weights,6), key=s.join(",");
+    if(!seen.has(key)){seen.add(key);generated.push(s);}
   }
-
-  const ex = excludes();
-
-  const pool =
-
-    Array
-
-      .from(
-
-        { length: 45 },
-
-        (_, i) => i + 1
-
-      )
-
-      .filter(
-
-        n => !ex.has(n)
-
-      );
-
-  if (pool.length < 6) {
-
-    alert(
-
-      "사용 가능한 번호가 6개 미만입니다."
-
-    );
-
-    return;
-
-  }
-
-  const weights =
-
-    Array(46).fill(1);
-
-  window.stats.ranked
-
-    .forEach((n, i) => {
-
-      weights[n] =
-
-        1 + (45 - i) / 15;
-
-    });
-
-  generated = [];
-
-  const cnt =
-
-    +$("setCount").value;
-
-  const seen =
-
-    new Set();
-
-  while (
-
-    generated.length < cnt
-
-  ) {
-
-    const s =
-
-      weightedPick(
-
-        pool,
-
-        weights,
-
-        6
-
-      );
-
-    const key =
-
-      s.join(",");
-
-    if (!seen.has(key)) {
-
-      seen.add(key);
-
-      generated.push(s);
-
-    }
-
-  }
-
   renderSets();
-
+  $("saveBtn").disabled=false;
+  $("saveInfo").textContent=latestDrawData ? `${latestDrawData.draw+1}회용으로 저장 가능` : "저장 가능";
 }
 
-/* =========================
-
-   추천 번호 출력
-
-========================= */
-
-function renderSets(hits) {
-
-  $("sets").innerHTML =
-
-    generated
-
-      .map((s, i) => {
-
-        return `
-
-          <div class="set">
-
-            <b>${i + 1}.</b>
-
-            ${s
-
-              .map(
-
-                n =>
-
-                  `<span class="num ${
-
-                    hits &&
-
-                    hits.has(n)
-
-                      ? "hit"
-
-                      : ""
-
-                  }">${n}</span>`
-
-              )
-
-              .join("")}
-
-          </div>
-
-        `;
-
-      })
-
-      .join("");
-
+function renderSets(hits){
+  $("sets").innerHTML=generated.map((s,i)=>`
+    <div class="set"><b>${i+1}.</b>
+    ${s.map(n=>`<span class="num ${hits&&hits.has(n)?"hit":""}">${n}</span>`).join("")}</div>`).join("");
 }
 
-/* =========================
+function saveGenerated(){
+  if(!generated.length) return;
+  const baseDraw = latestDrawData?.draw || rows[0]?.draw || null;
+  const payload = {
+    savedAt:new Date().toISOString(),
+    baseDraw,
+    targetDraw:baseDraw ? baseDraw+1 : null,
+    sets:generated
+  };
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(payload));
+  $("saveInfo").textContent=`${payload.targetDraw || "다음"}회 추천번호 저장 완료`;
+  autoCheckSaved();
+}
 
-   실제 당첨번호 대조
+function getSaved(){
+  try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");}catch{return null;}
+}
 
-========================= */
-
-function check() {
-
-  const win =
-
-    new Set(
-
-      $("winning").value
-
-        .split(/[,\s]+/)
-
-        .map(Number)
-
-        .filter(
-
-          n =>
-
-            n >= 1 &&
-
-            n <= 45
-
-        )
-
-    );
-
-  const bonus =
-
-    +$("bonus").value;
-
-  if (win.size !== 6) {
-
-    alert(
-
-      "당첨번호 6개를 입력하세요."
-
-    );
-
+function autoCheckSaved(){
+  const saved=getSaved();
+  if(!saved?.sets?.length){
+    $("savedCheck").className="empty";
+    $("savedCheck").textContent="저장된 추천번호가 없습니다.";
     return;
-
   }
 
-  renderSets(win);
+  const target = sourceRows.find(r=>r.draw===saved.targetDraw);
+  const dateText = new Date(saved.savedAt).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
+  if(!target){
+    $("savedCheck").className="";
+    $("savedCheck").innerHTML=`<div class="savedSummary"><div class="savedMeta">${saved.targetDraw || "다음"}회 추천 · ${dateText} 저장</div>아직 해당 회차 당첨 결과가 없습니다.</div>`;
+    return;
+  }
 
-  $("checkResult").innerHTML =
-
-    generated
-
-      .map((s, i) => {
-
-        const hit =
-
-          s.filter(
-
-            n => win.has(n)
-
-          );
-
-        const b =
-
-          s.includes(bonus) &&
-
-          !win.has(bonus);
-
-        return `
-
-          <div class="set">
-
-            ${i + 1}세트:
-
-            <b>
-
-              ${hit.length}개 일치
-
-            </b>
-
-            ${
-
-              b
-
-                ? " + 보너스"
-
-                : ""
-
-            }
-
-            —
-
-            ${
-
-              hit.join(", ") ||
-
-              "일치 없음"
-
-            }
-
-          </div>
-
-        `;
-
-      })
-
-      .join("");
-
+  const win=new Set(target.nums);
+  $("savedCheck").className="";
+  $("savedCheck").innerHTML=`
+    <div class="savedSummary">
+      <div class="savedMeta">${target.draw}회 자동 대조 · 당첨번호 ${target.nums.join(" · ")} + ${target.bonus}</div>
+      ${saved.sets.map((s,i)=>{
+        const hit=s.filter(n=>win.has(n));
+        const bonus=s.includes(target.bonus) && !win.has(target.bonus);
+        return `<div>${i+1}세트: <span class="${hit.length>=3?"matchGood":""}">${hit.length}개 일치${bonus?" + 보너스":""}</span> · ${hit.join(", ")||"일치 없음"}</div>`;
+      }).join("")}
+    </div>`;
 }
 
-/* =========================
+function check(){
+  const win=new Set($("winning").value.split(/[,\s]+/).map(Number).filter(n=>n>=1&&n<=45));
+  const bonus=Number($("bonus").value);
+  if(win.size!==6){alert("당첨번호 6개를 입력하세요.");return;}
+  renderSets(win);
+  $("checkResult").innerHTML=generated.length ? generated.map((s,i)=>{
+    const hit=s.filter(n=>win.has(n));
+    const b=s.includes(bonus)&&!win.has(bonus);
+    return `<div class="set">${i+1}세트: <b>${hit.length}개 일치</b>${b?" + 보너스":""} — ${hit.join(", ")||"일치 없음"}</div>`;
+  }).join("") : `<div class="hint">먼저 추천 조합을 생성하세요.</div>`;
+}
 
-   버튼 연결
+$("analyzeBtn").onclick=analyze;
+$("reloadBtn").onclick=loadAutoData;
+$("generateBtn").onclick=generate;
+$("saveBtn").onclick=saveGenerated;
+$("checkBtn").onclick=check;
 
-========================= */
+$("clearBtn").onclick=()=>{
+  $("data").value="";
+  rows=[];current=[];generated=[];
+  $("grades").innerHTML="데이터를 입력하고 분석하기를 누르세요.";
+  $("frequencyRank").innerHTML="";
+  $("zeroBox").innerHTML="";
+  $("sets").innerHTML="";
+  $("checkResult").innerHTML="";
+  $("saveBtn").disabled=true;
+};
 
-$("analyzeBtn").onclick =
-
-  analyze;
-
-$("generateBtn").onclick =
-
-  generate;
-
-$("checkBtn").onclick =
-
-  check;
-
-/* =========================
-
-   초기화
-
-========================= */
-
-$("clearBtn").onclick =
-
-  () => {
-
-    $("data").value = "";
-
-    rows = [];
-
-    current = [];
-
-    generated = [];
-
-    $("grades").innerHTML =
-
-      "데이터를 입력하고 분석하기를 누르세요.";
-
-    $("balls").innerHTML = "";
-
-    $("sets").innerHTML = "";
-
-    $("checkResult").innerHTML = "";
-
-  };
-
-/* =========================
-
-   분석 기간 변경
-
-========================= */
-
-$("period").onchange =
-
-  () => {
-
-    if (rows.length) {
-
-      analyze();
-
-    }
-
-  };
-
-/* =========================
-
-   샘플 데이터
-
-========================= */
-
-$("sampleBtn").onclick =
-
-  () => {
-
-    $("data").value =
-
-`1236,2026-08-15,1,7,12,23,34,41,10
-
-1235,2026-08-08,3,9,15,22,31,44,18
-
-1234,2026-08-01,5,11,17,28,33,42,7
-
-1233,2026-07-25,2,8,14,24,35,45,19
-
-1232,2026-07-18,6,13,20,27,32,40,4
-
-1231,2026-07-11,1,10,16,25,36,43,21`;
-
-    analyze();
-
-  };
-
-/* =========================
-
-   사이트 실행 시
-
-   실제 데이터 자동 로딩
-
-========================= */
-
-document.addEventListener(
-
-  "DOMContentLoaded",
-
-  () => {
-
-    loadAutoData();
-
-  }
-
-);
+$("period").onchange=()=>{if($("data").value.trim()) analyze();};
+document.addEventListener("DOMContentLoaded",loadAutoData);
