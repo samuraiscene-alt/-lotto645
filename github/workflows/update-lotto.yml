@@ -1,0 +1,40 @@
+name: Lotto data auto update
+
+on:
+  schedule:
+    # 한국시간 매주 일요일 21:10 (UTC 12:10)
+    - cron: "10 12 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Update latest 52 draws
+        run: python update_lotto.py
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet lotto_data.json; then
+            echo "No new draw."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lotto_data.json
+          git commit -m "Auto update lotto draw data"
+          git push
