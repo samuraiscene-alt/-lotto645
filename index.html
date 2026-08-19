@@ -64,9 +64,21 @@
 
 <section class="panel">
   <div class="row">
-    <div class="grow"><h2>추천 조합</h2><p class="hint">선택 기간의 출현 순위를 가중치로 이용합니다. 당첨을 보장하지 않습니다.</p></div>
-    <select id="setCount"><option>5</option><option selected>10</option><option>20</option></select>
-    <button class="primary" id="generateBtn">조합 생성</button>
+    <div class="grow">
+      <h2>추천 조합</h2>
+      <p class="hint">선택 기간의 출현 순위를 가중치로 이용합니다. 당첨을 보장하지 않습니다.</p>
+    </div>
+
+    <select id="setCount">
+      <option>5</option>
+      <option selected>10</option>
+      <option>20</option>
+    </select>
+
+    <div class="recommendActions">
+      <button class="primary" id="generateBtn">조합 생성</button>
+      <div class="excludeCount" id="excludeCount">제외수 0개</div>
+    </div>
   </div>
   <div class="saveRow"><button id="saveBtn" disabled>이번 주 추천번호 저장</button><span id="saveInfo" class="hint"></span></div>
   <div id="sets" class="sets"></div>
