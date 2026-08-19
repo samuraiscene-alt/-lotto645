@@ -216,57 +216,81 @@ function getExcludeNumbers(){
       .value
       .split(/[,\s]+/)
       .map(Number)
-      .filter(n=>n>=1&&n<=45)
-  )];
+      .filter(n => n >= 1 && n <= 45)
+  )].sort((a,b) => a-b);
+}
+
+function setExcludeNumbers(nums){
+  const unique = [...new Set(nums)]
+    .filter(n => n >= 1 && n <= 45)
+    .sort((a,b) => a-b)
+    .slice(0,39);
+
+  $("exclude").value = unique.join(",");
+
+  updateExcludeCount();
+  renderExcludePicker();
 }
 
 function updateExcludeCount(){
-  let nums = getExcludeNumbers();
+  const nums = getExcludeNumbers();
 
-  if(nums.length > 39){
-    nums = nums.slice(0,39);
-    $("exclude").value = nums.join(", ");
-    alert("제외수는 최대 39개까지 선택할 수 있습니다.");
+  $("excludeCount").textContent =
+    `제외수 ${nums.length}개`;
+
+  $("excludeSelected").textContent =
+    nums.length
+      ? `선택된 번호: ${nums.join(", ")} · 총 ${nums.length}개 (최대 39개)`
+      : "선택된 번호 없음 · 최대 39개";
+}
+
+function toggleExcludeNumber(n){
+  const nums = getExcludeNumbers();
+
+  if(nums.includes(n)){
+    setExcludeNumbers(
+      nums.filter(x => x !== n)
+    );
+    return;
   }
 
-  $("excludeCount").textContent = `제외수 ${nums.length}개`;
+  if(nums.length >= 39){
+    alert("제외수는 최대 39개까지 선택할 수 있습니다.");
+    return;
+  }
+
+  setExcludeNumbers([...nums, n]);
+}
+
+function renderExcludePicker(){
+  const selected = new Set(getExcludeNumbers());
+
+  $("excludeGrid").innerHTML =
+    Array.from({length:45},(_,i) => i+1)
+      .map(n => `
+        <button
+          type="button"
+          class="excludeNum ${selected.has(n) ? "selected" : ""}"
+          data-number="${n}">
+          ${n}
+        </button>
+      `)
+      .join("");
+
+  $("excludeGrid")
+    .querySelectorAll(".excludeNum")
+    .forEach(btn => {
+      btn.onclick = () => {
+        toggleExcludeNumber(
+          Number(btn.dataset.number)
+        );
+      };
+    });
 }
 
 function excludes(){
   return new Set(getExcludeNumbers());
 }
-
-function updateExcludeCount(){
-  let nums = getExcludeNumbers();
-
-  if(nums.length > 39){
-    nums = nums.slice(0,39);
-    $("exclude").value = nums.join(", ");
-    alert("제외수는 최대 39개까지 선택할 수 있습니다.");
-  }
-
-  $("excludeCount").textContent = `제외수 ${nums.length}개`;
-}
-
-function excludes(){
-  return new Set(getExcludeNumbers());
-}
-function updateExcludeCount(){
-  let nums = getExcludeNumbers();
-
-  if(nums.length > 39){
-    nums = nums.slice(0,39);
-    $("exclude").value = nums.join(", ");
-    alert("제외수는 최대 39개까지 선택할 수 있습니다.");
-  }
-
-  $("excludeCount").textContent = `제외수 ${nums.length}개`;
-}
-
-function excludes(){
-  return new Set(getExcludeNumbers());
-}
-
 function weightedPick(pool,weights,k){
   let p=[...pool];
   let out=[];
@@ -608,7 +632,12 @@ $("reloadBtn").onclick =
 
 $("generateBtn").onclick =
   generate;
-$("exclude").addEventListener("input", updateExcludeCount);
+$("excludeToggleBtn").onclick = () => {
+  const picker = $("excludePicker");
+  picker.hidden = !picker.hidden;
+  renderExcludePicker();
+  updateExcludeCount();
+};
 
 $("saveBtn").onclick =
   saveGenerated;
@@ -645,7 +674,8 @@ $("period").onchange = ()=>{
   }
 };
 
-document.addEventListener(
-  "DOMContentLoaded",
-  loadAutoData
-);
+document.addEventListener("DOMContentLoaded", () => {
+  renderExcludePicker();
+  updateExcludeCount();
+  loadAutoData();
+});
