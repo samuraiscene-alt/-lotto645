@@ -873,6 +873,16 @@ function applyWheel(){
 }
 document.querySelectorAll("[data-wheel]").forEach(btn=>btn.onclick=()=>openWheel(btn.dataset.wheel));
 $("wheelList").onscroll=updateWheelFocus;
+$("wheelList").onclick=e=>{
+  const item=e.target.closest(".wheelItem");
+  if(!item)return;
+  const items=[...$("wheelList").children];
+  const idx=items.indexOf(item);
+  if(idx<0)return;
+  wheelValue=item.dataset.value;
+  $("wheelList").scrollTo({top:idx*44,behavior:"smooth"});
+  setTimeout(updateWheelFocus,220);
+};
 $("wheelDone").onclick=applyWheel;$("wheelCancel").onclick=closeWheel;
 document.querySelector(".wheelBackdrop").onclick=closeWheel;
 
