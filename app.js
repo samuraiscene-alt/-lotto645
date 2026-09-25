@@ -5,6 +5,7 @@ let generated = [];
 let latestDrawData = null;
 let recommendationStrategy = "balanced";
 let rareMode = false;
+let rarityNumbers = [];
 
 const $ = id => document.getElementById(id);
 const STORAGE_KEY = "lotto645_saved_sets_v2";
@@ -398,6 +399,26 @@ function rareAccept(s,rnd=Math.random){
   if(!rareMode) return true;
   const score=rareSelectionScore(s);
   return rnd() < Math.max(.08,Math.min(.95,(score-35)/55));
+}
+
+function rarityPercentile(s){
+ const target=rareSelectionScore(s); let below=0,total=0;
+ for(let a=1;a<=40;a++)for(let b=a+1;b<=41;b++)for(let c=b+1;c<=42;c++)for(let d=c+1;d<=43;d++)for(let e=d+1;e<=44;e++)for(let f=e+1;f<=45;f++){total++;if(rareSelectionScore([a,b,c,d,e,f])<=target)below++;}
+ return Math.max(1,Math.min(99,Math.round(below/total*100)));
+}
+function renderRarityAnalyzer(){
+ const selected=new Set(rarityNumbers);
+ $("rarityGrid").innerHTML=Array.from({length:45},(_,i)=>i+1).map(n=>'<button type="button" class="rarityNum '+(selected.has(n)?"selected":"")+'" data-number="'+n+'">'+n+'</button>').join("");
+ $("rarityGrid").querySelectorAll(".rarityNum").forEach(btn=>btn.onclick=()=>toggleRarityNumber(Number(btn.dataset.number)));
+ if(rarityNumbers.length!==6){$("rarityResult").className="rarityResult empty";$("rarityResult").textContent=rarityNumbers.length+"/6 선택 · 번호 6개를 선택하세요.";return;}
+ const pct=rarityPercentile(rarityNumbers); $("rarityResult").className="rarityResult";
+ $("rarityResult").innerHTML="<span>선택번호 "+rarityNumbers.join(" · ")+"</span><strong>희소성 "+pct+"%</strong>";
+}
+function toggleRarityNumber(n){
+ if(rarityNumbers.includes(n))rarityNumbers=rarityNumbers.filter(x=>x!==n);
+ else if(rarityNumbers.length<6)rarityNumbers=[...rarityNumbers,n].sort((a,b)=>a-b);
+ else{alert("6개 번호를 모두 선택했습니다. 선택된 번호를 먼저 눌러 해제하세요.");return;}
+ renderRarityAnalyzer();
 }
 
 function balancedSet(s){
@@ -824,5 +845,6 @@ document.addEventListener("DOMContentLoaded", () => {
   updateExcludeCount();
   renderIncludePicker();
   updateIncludeCount();
+  renderRarityAnalyzer();
   loadAutoData();
 });
