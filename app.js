@@ -404,10 +404,17 @@ function rareAccept(s,rnd=Math.random){
   return rnd() < Math.max(.08,Math.min(.95,(score-35)/55));
 }
 
+let rarityDistribution=null;
+function buildRarityDistribution(){
+ if(rarityDistribution) return rarityDistribution;
+ const counts=Array(101).fill(0); let total=0;
+ for(let a=1;a<=40;a++)for(let b=a+1;b<=41;b++)for(let c=b+1;c<=42;c++)for(let d=c+1;d<=43;d++)for(let e=d+1;e<=44;e++)for(let f=e+1;f<=45;f++){counts[rareSelectionScore([a,b,c,d,e,f])]++;total++;}
+ let run=0; rarityDistribution=counts.map(n=>{run+=n;return run/total;}); return rarityDistribution;
+}
 function rarityPercentile(s){
- const target=rareSelectionScore(s); let below=0,total=0;
- for(let a=1;a<=40;a++)for(let b=a+1;b<=41;b++)for(let c=b+1;c<=42;c++)for(let d=c+1;d<=43;d++)for(let e=d+1;e<=44;e++)for(let f=e+1;f<=45;f++){total++;if(rareSelectionScore([a,b,c,d,e,f])<=target)below++;}
- return Math.max(1,Math.min(99,Math.round(below/total*100)));
+ const score=rareSelectionScore(s);
+ const dist=buildRarityDistribution();
+ return Math.max(1,Math.min(99,Math.round(dist[score]*100)));
 }
 function renderRarityAnalyzer(){
  const selected=new Set(rarityNumbers);
