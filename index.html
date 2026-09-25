@@ -31,7 +31,7 @@
     <option value="52">최근 1년</option><option value="26">최근 6개월</option><option value="13">최근 3개월</option>
     <option value="10">최근 10회</option><option value="20">최근 20회</option><option value="30">최근 30회</option><option value="all">전체</option>
   </select>
-  <input id="exclude" type="hidden" value="">
+  <input id="exclude" type="hidden" value=""><input id="include" type="hidden" value="">
 </section>
 
 <section class="panel gradePanel">
@@ -59,7 +59,8 @@
     <button type="button" class="strategyBtn" data-strategy="recent">최근형</button>
     <button type="button" class="strategyBtn" data-strategy="long">장기형</button>
   </div>
-  <div class="recommendActions"><button class="primary" id="generateBtn">추천번호 만들기</button><button class="secondary excludeToggleBtn" id="excludeToggleBtn" type="button"><span id="excludeCount">제외수 0개</span></button></div>
+  <div class="recommendActions"><button class="primary" id="generateBtn">추천번호 만들기</button><button class="secondary includeToggleBtn" id="includeToggleBtn" type="button"><span id="includeCount">고정수 0개</span></button><button class="secondary excludeToggleBtn" id="excludeToggleBtn" type="button"><span id="excludeCount">제외수 0개</span></button></div>
+  <div id="includePicker" class="includePicker" hidden><div class="includePickerTitle">반드시 포함할 번호를 선택하세요 <span>(최대 6개)</span></div><div id="includeGrid" class="includeGrid"></div><div id="includeSelected" class="includeSelected">선택된 고정수 없음 · 최대 6개</div></div>
   <div id="excludePicker" class="excludePicker" hidden><div class="excludePickerTitle">제외할 번호를 선택하세요 <span>(최대 39개)</span></div><div id="excludeGrid" class="excludeGrid"></div><div id="excludeSelected" class="excludeSelected">선택된 번호 없음 · 최대 39개</div></div>
   <div class="saveRow"><button id="saveBtn" disabled>이번 주 추천번호 저장</button><span id="saveInfo" class="hint"></span></div>
   <div id="sets" class="sets"></div>
