@@ -51,8 +51,13 @@
 </section>
 
 <section class="panel recommendPanel">
-  <div class="row"><div class="grow"><h2>추천 조합</h2><p class="hint">선택 기간의 출현 순위를 가중치로 이용합니다. 당첨을 보장하지 않습니다.</p></div>
+  <div class="row"><div class="grow"><h2>종합 추천</h2><p class="hint">1년 30% · 6개월 30% · 3개월 40%를 합산하고 조합 균형을 적용합니다.</p></div>
     <select id="setCount"><option>5</option><option selected>10</option><option>20</option></select>
+  </div>
+  <div class="strategyTabs">
+    <button type="button" class="strategyBtn active" data-strategy="balanced">종합형</button>
+    <button type="button" class="strategyBtn" data-strategy="recent">최근형</button>
+    <button type="button" class="strategyBtn" data-strategy="long">장기형</button>
   </div>
   <div class="recommendActions"><button class="primary" id="generateBtn">추천번호 만들기</button><button class="secondary excludeToggleBtn" id="excludeToggleBtn" type="button"><span id="excludeCount">제외수 0개</span></button></div>
   <div id="excludePicker" class="excludePicker" hidden><div class="excludePickerTitle">제외할 번호를 선택하세요 <span>(최대 39개)</span></div><div id="excludeGrid" class="excludeGrid"></div><div id="excludeSelected" class="excludeSelected">선택된 번호 없음 · 최대 39개</div></div>
@@ -63,12 +68,10 @@
 <section class="panel"><h2>지난 추천번호 자동 대조</h2><div id="savedCheck" class="empty">저장된 추천번호가 없습니다.</div></section>
 
 <details class="panel utilityPanel">
-  <summary>고급 기능 · 직접 데이터 입력/대조</summary>
+  <summary>고급 기능 · 직접 당첨번호 대조</summary>
   <div class="utilityBody">
-    <h2>당첨번호 입력</h2><p class="hint">형식: 회차 - 당첨번호 6개 - 보너스번호</p>
-    <textarea id="data" rows="8" placeholder="1237 - 10 20 23 34 37 40 - 36"></textarea>
-    <div class="actions"><button class="primary" id="analyzeBtn">분석하기</button><button id="reloadBtn">최신 데이터 다시 읽기</button><button id="clearBtn">초기화</button></div>
-    <div class="divider"></div>
+    <textarea id="data" hidden></textarea>
+    <button id="analyzeBtn" hidden>분석하기</button><button id="reloadBtn" hidden>최신 데이터 다시 읽기</button><button id="clearBtn" hidden>초기화</button>
     <h2>직접 당첨번호 대조</h2>
     <div class="row"><input class="grow" id="winning" placeholder="당첨번호 6개: 1,7,12,23,34,41"><input id="bonus" type="number" min="1" max="45" placeholder="보너스"><button id="checkBtn">대조</button></div>
     <div id="checkResult"></div>
