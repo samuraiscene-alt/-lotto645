@@ -41,6 +41,11 @@
 
 <section class="panel">
   <div class="rankHead"><div><h2>출현 횟수 순위</h2><p class="hint" id="rankPeriodLabel">선택 기간 기준</p></div><div id="totalHits" class="totalHits"></div></div>
+  <div class="rankPeriodTabs" aria-label="출현 횟수 분석 기간">
+    <button type="button" class="rankPeriodBtn active" data-period="52">1년</button>
+    <button type="button" class="rankPeriodBtn" data-period="26">6개월</button>
+    <button type="button" class="rankPeriodBtn" data-period="13">3개월</button>
+  </div>
   <div id="frequencyRank" class="frequencyRank empty">데이터를 불러오는 중입니다.</div>
   <div id="zeroBox" class="zeroBox"></div>
 </section>
