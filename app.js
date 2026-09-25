@@ -387,6 +387,90 @@ function generate(){
   $("saveInfo").textContent=latestDrawData?latestDrawData.draw+1+"회용으로 저장 가능":"저장 가능";
 }
 
+function seededRandom(seed){
+  let x=seed>>>0;
+  return ()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296;};
+}
+
+function historicalWeights(history,strategy){
+  const countFor=n=>{const c=Array(46).fill(0);history.slice(0,n).forEach(r=>r.nums.forEach(v=>c[v]++));return c;};
+  const norm=c=>{const m=Math.max(...c.slice(1),1);return c.map((v,i)=>i? v/m:0);};
+  const a=norm(countFor(52)),b=norm(countFor(26)),d=norm(countFor(13));
+  const mixes={balanced:[.30,.30,.40],recent:[.15,.25,.60],long:[.60,.25,.15]};
+  const m=mixes[strategy]||mixes.balanced;
+  return Array.from({length:46},(_,n)=>n?1+(a[n]*m[0]+b[n]*m[1]+d[n]*m[2])*3:0);
+}
+
+function seededPick(pool,weights,k,rnd){
+  let p=[...pool],out=[];
+  while(out.length<k&&p.length){
+    const total=p.reduce((s,n)=>s+weights[n],0);
+    let r=rnd()*total,chosen=p[0];
+    for(const n of p){r-=weights[n];if(r<=0){chosen=n;break;}}
+    out.push(chosen);p=p.filter(n=>n!==chosen);
+  }
+  return out.sort((a,b)=>a-b);
+}
+
+function prizeFor(set,target){
+  const win=new Set(target.nums);
+  const hits=set.filter(n=>win.has(n)).length;
+  const bonus=set.includes(target.bonus);
+  if(hits===6)return 1;
+  if(hits===5&&bonus)return 2;
+  if(hits===5)return 3;
+  if(hits===4)return 4;
+  if(hits===3)return 5;
+  return 0;
+}
+
+function runBacktest(){
+  const n=Number($("backtestPeriod").value);
+  const chronological=[...sourceRows].sort((a,b)=>a.draw-b.draw);
+  if(chronological.length<14){$("backtestResult").textContent="백테스트에 필요한 데이터가 부족합니다.";return;}
+  const targets=chronological.slice(-Math.min(n,chronological.length-13));
+  const totals={1:0,2:0,3:0,4:0,5:0},hitTotals=[0,0,0,0,0,0,0];
+  const details=[];
+  for(const target of targets){
+    const idx=chronological.findIndex(r=>r.draw===target.draw);
+    const history=chronological.slice(0,idx).sort((a,b)=>b.draw-a.draw);
+    const weights=historicalWeights(history,recommendationStrategy);
+    const rnd=seededRandom(target.draw*7919+recommendationStrategy.length*101);
+    const sets=[],seen=new Set();
+    let attempts=0;
+    while(sets.length<10&&attempts<5000){
+      attempts++;
+      const s=seededPick(Array.from({length:45},(_,i)=>i+1),weights,6,rnd),key=s.join(",");
+      if(!seen.has(key)&&balancedSet(s)){seen.add(key);sets.push(s);}
+    }
+    while(sets.length<10){
+      const s=seededPick(Array.from({length:45},(_,i)=>i+1),weights,6,rnd),key=s.join(",");
+      if(!seen.has(key)){seen.add(key);sets.push(s);}
+    }
+    let best=0,bestPrize=0;
+    for(const s of sets){
+      const hits=s.filter(v=>target.nums.includes(v)).length;
+      hitTotals[hits]++;
+      const prize=prizeFor(s,target);
+      if(prize){totals[prize]++;if(!bestPrize||prize<bestPrize)bestPrize=prize;}
+      if(hits>best)best=hits;
+    }
+    details.push({draw:target.draw,best,bestPrize});
+  }
+  const labels={balanced:"종합형",recent:"최근형",long:"장기형"};
+  $("backtestResult").className="";
+  $("backtestResult").innerHTML=`
+    <div class="backtestSummary">
+      <div class="backtestMeta">${labels[recommendationStrategy]} · ${targets.length}회 × 10세트</div>
+      <div class="prizeGrid">
+        ${[1,2,3,4,5].map(p=>`<div><b>${p}등</b><strong>${totals[p]}회</strong></div>`).join("")}
+      </div>
+      <div class="hitSummary">3개 일치 ${hitTotals[3]}세트 · 4개 ${hitTotals[4]}세트 · 5개 ${hitTotals[5]}세트 · 6개 ${hitTotals[6]}세트</div>
+      <div class="backtestList">${details.slice().reverse().map(d=>`<span>${d.draw}회 <b>${d.best}개</b>${d.bestPrize?" · "+d.bestPrize+"등":""}</span>`).join("")}</div>
+      <p class="hint">과거 결과를 이용한 검증이며 미래 당첨 가능성을 의미하지 않습니다.</p>
+    </div>`;
+}
+
 function renderSets(hits){
 
   $("sets").innerHTML =
@@ -670,6 +754,8 @@ document.querySelectorAll(".rankPeriodBtn").forEach(btn=>{
     analyze();
   };
 });
+
+$("backtestBtn").onclick=runBacktest;
 
 document.querySelectorAll(".strategyBtn").forEach(btn=>{
   btn.onclick=()=>{
