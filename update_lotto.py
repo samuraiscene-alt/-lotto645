@@ -4,6 +4,7 @@ from datetime import datetime
 import requests
 
 DATA_FILE = Path("lotto_data.json")
+RARITY_FILE = Path("rarity_model.json")
 MAIN_URL = "https://dhlottery.co.kr/selectMainInfo.do"
 DETAIL_URL = "https://www.dhlottery.co.kr/lt645/selectPstLt645InfoNew.do"
 HEADERS = {
@@ -47,6 +48,35 @@ def fetch_draw(draw):
         "bonus": int(item["bnsWnNo"]),
     }
 
+def rarity_score(nums):
+    nums = sorted(nums)
+    gaps = [nums[i]-nums[i-1] for i in range(1,6)]
+    total = sum(nums)
+    min_gap, max_gap = min(gaps), max(gaps)
+    birthday = sum(1 for n in nums if n <= 31)
+    predicted = .94746-(.00279*total)+(.02451*min_gap)-(.00647*max_gap)-(.05694*birthday)
+    return max(0, min(100, round((1-predicted)*100)))
+
+def write_rarity_model(latest):
+    counts = [0]*101
+    total = 0
+    for a in range(1,41):
+      for b in range(a+1,42):
+       for c in range(b+1,43):
+        for d in range(c+1,44):
+         for e in range(d+1,45):
+          for f in range(e+1,46):
+           counts[rarity_score([a,b,c,d,e,f])] += 1
+           total += 1
+    run=0
+    cdf=[]
+    for n in counts:
+        run += n
+        cdf.append(run/total)
+    model={"updated_through_draw":latest,"cdf":cdf}
+    RARITY_FILE.write_text(json.dumps(model,ensure_ascii=False,separators=(",",":"))+"\n",encoding="utf-8")
+    print(f"희소성 기준표 생성 완료: {total:,}개 조합")
+
 def main():
     existing = []
     if DATA_FILE.exists():
@@ -84,6 +114,8 @@ def main():
         print(f"업데이트 완료: 최신 {latest}회 / {len(wanted)}회분 저장")
     else:
         print(f"변경 없음: 최신 {latest}회 / {len(wanted)}회분")
+
+    write_rarity_model(latest)
 
 if __name__ == "__main__":
     main()
