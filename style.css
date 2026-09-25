@@ -6,3 +6,7 @@
 .rareToggle{display:flex;align-items:center;gap:10px;margin:12px 0 4px;padding:11px 12px;border-radius:14px;background:#f7f8fa;cursor:pointer}.rareToggle input{width:20px;height:20px;accent-color:#0a84ff}.rareToggle span{display:flex;flex-direction:column;gap:2px}.rareToggle b{font-size:13px}.rareToggle small{font-size:10px;color:#6b7280}
 
 .rarityGrid{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;margin:12px 0}.rarityNum{padding:0;aspect-ratio:1;border-radius:50%;font-size:12px;background:#fff}.rarityNum.selected{background:#5856d6;color:#fff;border-color:#5856d6}.rarityResult{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:15px;background:#f2efff;margin:10px 0}.rarityResult span{font-size:12px;font-weight:700}.rarityResult strong{font-size:20px;color:#5856d6;white-space:nowrap}.rarityResult.empty{display:block;color:#8e8e93;background:#f7f8fa;font-size:12px}@media(max-width:650px){.rarityGrid{grid-template-columns:repeat(7,1fr)}}
+
+/* rarity analyzer selected-state visibility */
+.rarityNum.selected{background:#0a84ff!important;color:#fff!important;border-color:#0a84ff!important;box-shadow:0 4px 10px rgba(10,132,255,.28)}
+.rarityResult .rarityChosen{line-height:1.5}.rarityResult .rarityChosen b{font-size:15px}.rarityResult.rarityNotice{display:block;background:#fff4dc;color:#9a5b00;font-weight:800;font-size:12px}
