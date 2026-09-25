@@ -3,6 +3,7 @@ let sourceRows = [];
 let current = [];
 let generated = [];
 let latestDrawData = null;
+let recommendationStrategy = "balanced";
 
 const $ = id => document.getElementById(id);
 const STORAGE_KEY = "lotto645_saved_sets_v2";
@@ -332,75 +333,58 @@ function weightedPick(pool,weights,k){
   return out.sort((a,b)=>a-b);
 }
 
+function countsFor(limit){
+  const count=Array(46).fill(0);
+  rows.slice(0,Math.min(limit,rows.length)).forEach(r=>r.nums.forEach(n=>count[n]++));
+  return count;
+}
+
+function normalizedScore(count){
+  const max=Math.max(...count.slice(1),1);
+  return count.map((v,i)=>i===0?0:v/max);
+}
+
+function recommendationWeights(){
+  const s52=normalizedScore(countsFor(52)), s26=normalizedScore(countsFor(26)), s13=normalizedScore(countsFor(13));
+  const mixes={
+    balanced:[.30,.30,.40],
+    recent:[.15,.25,.60],
+    long:[.60,.25,.15]
+  };
+  const mix=mixes[recommendationStrategy]||mixes.balanced;
+  return Array.from({length:46},(_,n)=>n===0?0:1+(s52[n]*mix[0]+s26[n]*mix[1]+s13[n]*mix[2])*3);
+}
+
+function balancedSet(s){
+  const odd=s.filter(n=>n%2).length;
+  const low=s.filter(n=>n<=22).length;
+  const bands=new Set(s.map(n=>Math.min(4,Math.floor((n-1)/10)))).size;
+  let consecutive=0;
+  for(let i=1;i<s.length;i++) if(s[i]===s[i-1]+1) consecutive++;
+  return odd>=2&&odd<=4&&low>=2&&low<=4&&bands>=3&&consecutive<=1;
+}
+
 function generate(){
-
-  if(!window.stats){
-    analyze();
-  }
-
-  const ex =
-    excludes();
-
-  const pool =
-    Array.from(
-      {length:45},
-      (_,i)=>i+1
-    )
-    .filter(n=>!ex.has(n));
-
-  if(pool.length<6){
-
-    alert("사용 가능한 번호가 6개 미만입니다.");
-
-    return;
-  }
-
-  const weights =
-    Array(46).fill(1);
-
-  window.stats.ranked.forEach(
-    (n,i)=>{
-      weights[n] =
-        1+(45-i)/15;
-    }
-  );
-
+  if(!rows.length) analyze();
+  const ex=excludes();
+  const pool=Array.from({length:45},(_,i)=>i+1).filter(n=>!ex.has(n));
+  if(pool.length<6){alert("사용 가능한 번호가 6개 미만입니다.");return;}
+  const weights=recommendationWeights();
   generated=[];
-
-  const cnt =
-    Number($("setCount").value);
-
-  const seen =
-    new Set();
-
-  while(generated.length<cnt){
-
-    const s =
-      weightedPick(
-        pool,
-        weights,
-        6
-      );
-
-    const key =
-      s.join(",");
-
-    if(!seen.has(key)){
-
-      seen.add(key);
-
-      generated.push(s);
-    }
+  const cnt=Number($("setCount").value), seen=new Set();
+  let attempts=0;
+  while(generated.length<cnt && attempts<5000){
+    attempts++;
+    const s=weightedPick(pool,weights,6), key=s.join(",");
+    if(!seen.has(key)&&balancedSet(s)){seen.add(key);generated.push(s);}
   }
-
+  while(generated.length<cnt){
+    const s=weightedPick(pool,weights,6),key=s.join(",");
+    if(!seen.has(key)){seen.add(key);generated.push(s);}
+  }
   renderSets();
-
   $("saveBtn").disabled=false;
-
-  $("saveInfo").textContent =
-    latestDrawData
-      ? `${latestDrawData.draw+1}회용으로 저장 가능`
-      : "저장 가능";
+  $("saveInfo").textContent=latestDrawData?latestDrawData.draw+1+"회용으로 저장 가능":"저장 가능";
 }
 
 function renderSets(hits){
@@ -684,6 +668,13 @@ document.querySelectorAll(".rankPeriodBtn").forEach(btn=>{
   btn.onclick = ()=>{
     $("period").value = btn.dataset.period;
     analyze();
+  };
+});
+
+document.querySelectorAll(".strategyBtn").forEach(btn=>{
+  btn.onclick=()=>{
+    recommendationStrategy=btn.dataset.strategy;
+    document.querySelectorAll(".strategyBtn").forEach(x=>x.classList.toggle("active",x===btn));
   };
 });
 
