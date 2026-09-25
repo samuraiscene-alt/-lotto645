@@ -509,6 +509,7 @@ function runBacktest(){
   if(chronological.length<14){$("backtestResult").textContent="백테스트에 필요한 데이터가 부족합니다.";return;}
   const targets=chronological.slice(-Math.min(n,chronological.length-13));
   const totals={1:0,2:0,3:0,4:0,5:0},hitTotals=[0,0,0,0,0,0,0];
+  const randomTotals={1:0,2:0,3:0,4:0,5:0},randomHits=[0,0,0,0,0,0,0];
   const details=[];
   for(const target of targets){
     const idx=chronological.findIndex(r=>r.draw===target.draw);
@@ -534,6 +535,17 @@ function runBacktest(){
       if(prize){totals[prize]++;if(!bestPrize||prize<bestPrize)bestPrize=prize;}
       if(hits>best)best=hits;
     }
+    const rr=seededRandom(target.draw*104729+17),randomSets=[],randomSeen=new Set();
+    while(randomSets.length<10){
+      const s=seededPick(Array.from({length:45},(_,i)=>i+1),Array(46).fill(1),6,rr),key=s.join(",");
+      if(!randomSeen.has(key)){randomSeen.add(key);randomSets.push(s);}
+    }
+    for(const s of randomSets){
+      const hits=s.filter(v=>target.nums.includes(v)).length;
+      randomHits[hits]++;
+      const prize=prizeFor(s,target);
+      if(prize) randomTotals[prize]++;
+    }
     details.push({draw:target.draw,best,bestPrize});
   }
   const labels={balanced:"종합형",recent:"최근형",long:"장기형"};
@@ -544,7 +556,9 @@ function runBacktest(){
       <div class="prizeGrid">
         ${[1,2,3,4,5].map(p=>`<div><b>${p}등</b><strong>${totals[p]}회</strong></div>`).join("")}
       </div>
-      <div class="hitSummary">3개 일치 ${hitTotals[3]}세트 · 4개 ${hitTotals[4]}세트 · 5개 ${hitTotals[5]}세트 · 6개 ${hitTotals[6]}세트</div>
+      <div class="hitSummary">추천전략 · 3개 ${hitTotals[3]} · 4개 ${hitTotals[4]} · 5개 ${hitTotals[5]} · 6개 ${hitTotals[6]}세트</div>
+      <div class="hitSummary randomCompare">완전 무작위 · 3개 ${randomHits[3]} · 4개 ${randomHits[4]} · 5개 ${randomHits[5]} · 6개 ${randomHits[6]}세트</div>
+      <div class="randomPrize">무작위 당첨 · ${[1,2,3,4,5].map(p=>`${p}등 ${randomTotals[p]}회`).join(" · ")}</div>
       <div class="backtestList">${details.slice().reverse().map(d=>`<span>${d.draw}회 <b>${d.best}개</b>${d.bestPrize?" · "+d.bestPrize+"등":""}</span>`).join("")}</div>
       <p class="hint">과거 결과를 이용한 검증이며 미래 당첨 가능성을 의미하지 않습니다.</p>
     </div>`;
