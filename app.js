@@ -61,9 +61,13 @@ function lottoColorClass(n){
 }
 
 function syncRankPeriodTabs(){
-  document.querySelectorAll(".rankPeriodBtn").forEach(btn=>{
-    btn.classList.toggle("active", btn.dataset.period === $("period").value);
-  });
+  const rankBtn=$("rankWheelBtn");
+  if(rankBtn){
+    const labels={"52":"1년","26":"6개월","13":"3개월","10":"최근 10회","20":"최근 20회","30":"최근 30회","all":"전체"};
+    rankBtn.querySelector("span").textContent=labels[$("period").value]||periodLabel();
+  }
+  const periodBtn=$("periodWheelBtn");
+  if(periodBtn) periodBtn.querySelector("span").textContent=periodLabel();
 }
 
 function analyze(){
@@ -827,22 +831,55 @@ $("period").onchange = ()=>{
   }
 };
 
-document.querySelectorAll(".rankPeriodBtn").forEach(btn=>{
-  btn.onclick = ()=>{
-    $("period").value = btn.dataset.period;
-    analyze();
-  };
-});
+const WHEEL_OPTIONS={
+  period:[["52","최근 1년"],["26","최근 6개월"],["13","최근 3개월"],["10","최근 10회"],["20","최근 20회"],["30","최근 30회"],["all","전체"]],
+  rank:[["52","1년"],["26","6개월"],["13","3개월"]],
+  strategy:[["balanced","종합형"],["recent","최근형"],["long","장기형"]],
+  count:[["5","5세트"],["10","10세트"],["20","20세트"]],
+  backtest:[["10","최근 10회"],["20","최근 20회"],["30","최근 30회"]]
+};
+let activeWheel=null,wheelValue=null;
+function wheelCurrent(type){
+  if(type==="period"||type==="rank") return $("period").value;
+  if(type==="strategy") return recommendationStrategy;
+  if(type==="count") return $("setCount").value;
+  if(type==="backtest") return $("backtestPeriod").value;
+}
+function openWheel(type){
+  activeWheel=type;wheelValue=wheelCurrent(type);
+  const titles={period:"분석 기간",rank:"출현 횟수 순위",strategy:"종합 추천",count:"추천 세트 수",backtest:"백테스트 기간"};
+  $("wheelTitle").textContent=titles[type]||"선택";
+  $("wheelList").innerHTML=WHEEL_OPTIONS[type].map(([v,l])=>`<div class="wheelItem" data-value="${v}">${l}</div>`).join("");
+  $("wheelSheet").hidden=false;document.body.style.overflow="hidden";
+  requestAnimationFrame(()=>{
+    const items=[...$("wheelList").children],idx=Math.max(0,items.findIndex(x=>x.dataset.value===wheelValue));
+    $("wheelList").scrollTop=idx*44;updateWheelFocus();
+  });
+}
+function updateWheelFocus(){
+  const list=$("wheelList"),idx=Math.round(list.scrollTop/44),items=[...list.children];
+  items.forEach((el,i)=>el.classList.toggle("near",i!==idx));
+  if(items[idx]) wheelValue=items[idx].dataset.value;
+}
+function closeWheel(){ $("wheelSheet").hidden=true;document.body.style.overflow="";activeWheel=null; }
+function applyWheel(){
+  if(!activeWheel)return;
+  const label=(WHEEL_OPTIONS[activeWheel].find(x=>x[0]===wheelValue)||[])[1]||"";
+  if(activeWheel==="period"||activeWheel==="rank"){$("period").value=wheelValue;analyze();}
+  if(activeWheel==="strategy"){recommendationStrategy=wheelValue;$("strategyWheelBtn").querySelector("span").textContent=label;}
+  if(activeWheel==="count"){$("setCount").value=wheelValue;$("setCountWheelBtn").querySelector("span").textContent=label;}
+  if(activeWheel==="backtest"){$("backtestPeriod").value=wheelValue;$("backtestWheelBtn").querySelector("span").textContent=label;}
+  closeWheel();
+}
+document.querySelectorAll("[data-wheel]").forEach(btn=>btn.onclick=()=>openWheel(btn.dataset.wheel));
+$("wheelList").onscroll=updateWheelFocus;
+$("wheelDone").onclick=applyWheel;$("wheelCancel").onclick=closeWheel;
+document.querySelector(".wheelBackdrop").onclick=closeWheel;
 
 $("backtestBtn").onclick=runBacktest;
 $("rareMode").onchange=e=>{rareMode=e.target.checked;};
 
-document.querySelectorAll(".strategyBtn").forEach(btn=>{
-  btn.onclick=()=>{
-    recommendationStrategy=btn.dataset.strategy;
-    document.querySelectorAll(".strategyBtn").forEach(x=>x.classList.toggle("active",x===btn));
-  };
-});
+
 
 document.addEventListener("DOMContentLoaded", async () => {
   try{
