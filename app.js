@@ -57,6 +57,12 @@ function lottoColorClass(n){
   return "ball-green";
 }
 
+function syncRankPeriodTabs(){
+  document.querySelectorAll(".rankPeriodBtn").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.period === $("period").value);
+  });
+}
+
 function analyze(){
   parse();
   current = filtered();
@@ -124,6 +130,7 @@ function analyze(){
     ranked,
     grades
   };
+  syncRankPeriodTabs();
 }
 
 function setLatestUI(){
@@ -668,11 +675,17 @@ $("clearBtn").onclick = ()=>{
 };
 
 $("period").onchange = ()=>{
-
   if($("data").value.trim()){
     analyze();
   }
 };
+
+document.querySelectorAll(".rankPeriodBtn").forEach(btn=>{
+  btn.onclick = ()=>{
+    $("period").value = btn.dataset.period;
+    analyze();
+  };
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   renderExcludePicker();
