@@ -415,12 +415,12 @@ function renderRarityAnalyzer(){
  $("rarityGrid").querySelectorAll(".rarityNum").forEach(btn=>btn.onclick=()=>toggleRarityNumber(Number(btn.dataset.number)));
  if(rarityNumbers.length!==6){$("rarityResult").className="rarityResult empty";$("rarityResult").textContent=rarityNumbers.length+"/6 선택 · 번호 6개를 선택하세요.";return;}
  const pct=rarityPercentile(rarityNumbers); $("rarityResult").className="rarityResult";
- $("rarityResult").innerHTML="<span>선택번호 "+rarityNumbers.join(" · ")+"</span><strong>희소성 "+pct+"%</strong>";
+ $("rarityResult").innerHTML="<span class=\"rarityChosen\">선택번호<br><b>"+rarityNumbers.join(" · ")+"</b></span><strong>희소성 "+pct+"%</strong>";
 }
 function toggleRarityNumber(n){
  if(rarityNumbers.includes(n))rarityNumbers=rarityNumbers.filter(x=>x!==n);
  else if(rarityNumbers.length<6)rarityNumbers=[...rarityNumbers,n].sort((a,b)=>a-b);
- else{alert("6개 번호를 모두 선택했습니다. 선택된 번호를 먼저 눌러 해제하세요.");return;}
+ else{$("rarityResult").className="rarityResult rarityNotice";$("rarityResult").textContent="선택된 번호를 먼저 눌러 해제하세요.";return;}
  renderRarityAnalyzer();
 }
 
