@@ -10,3 +10,5 @@
 /* rarity analyzer selected-state visibility */
 .rarityNum.selected{background:#0a84ff!important;color:#fff!important;border-color:#0a84ff!important;box-shadow:0 4px 10px rgba(10,132,255,.28)}
 .rarityResult .rarityChosen{line-height:1.5}.rarityResult .rarityChosen b{font-size:15px}.rarityResult.rarityNotice{display:block;background:#fff4dc;color:#9a5b00;font-weight:800;font-size:12px}
+
+.set{position:relative;padding-right:92px}.setRarity{margin-left:auto;min-width:62px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;line-height:1.05}.setRarity small{font-size:10px;color:#8e8e93;font-weight:700}.setRarity strong{margin-top:4px;font-size:16px;color:#0a84ff;font-weight:900}@media(max-width:430px){.set{padding-right:74px}.setRarity{min-width:54px}.setRarity strong{font-size:15px}}
