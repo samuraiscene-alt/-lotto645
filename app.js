@@ -226,7 +226,7 @@ function getIncludeNumbers(){
 function setIncludeNumbers(nums){
   const unique=[...new Set(nums)].filter(n=>n>=1&&n<=45&&!getExcludeNumbers().includes(n)).sort((a,b)=>a-b);
   $("include").value=unique.join(",");
-  updateIncludeCount();renderIncludePicker();
+  updateIncludeCount();renderIncludePicker();renderExcludePicker();
 }
 function updateIncludeCount(){
   const nums=getIncludeNumbers();
@@ -291,6 +291,8 @@ function toggleExcludeNumber(n){
     return;
   }
 
+  if(getIncludeNumbers().includes(n)) return;
+
   if(nums.length >= 39){
     alert("제외수는 최대 39개까지 선택할 수 있습니다.");
     return;
@@ -301,6 +303,7 @@ function toggleExcludeNumber(n){
 
 function renderExcludePicker(){
   const selected = new Set(getExcludeNumbers());
+  const fixed = new Set(getIncludeNumbers());
 
   $("excludeGrid").innerHTML =
     Array.from({length:45},(_,i) => i+1)
@@ -308,7 +311,7 @@ function renderExcludePicker(){
         <button
           type="button"
           class="excludeNum ${selected.has(n) ? "selected" : ""}"
-          data-number="${n}">
+          data-number="${n}" ${fixed.has(n) ? "disabled" : ""}>
           ${n}
         </button>
       `)
