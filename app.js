@@ -393,8 +393,9 @@ function rareSelectionScore(s){
   const sum=sorted.reduce((a,b)=>a+b,0);
   const minGap=Math.min(...gaps), maxGap=Math.max(...gaps);
   const birthday=sorted.filter(n=>n<=31).length;
-  // 262~1120회 학습계수의 방향/크기를 사용. 낮을수록 수동 공동선택 위험이 낮은 쪽.
-  const predictedManualShare=.94746-(.00279*sum)+(.02451*minGap)-(.00647*maxGap)-(.05694*birthday);
+  const fallback=[.94746,-.00279,.02451,-.00647,-.05694];
+  const c=(window.rarityModel?.coefficients?.length===5)?window.rarityModel.coefficients:fallback;
+  const predictedManualShare=c[0]+c[1]*sum+c[2]*minGap+c[3]*maxGap+c[4]*birthday;
   return Math.max(0,Math.min(100,Math.round((1-predictedManualShare)*100)));
 }
 
