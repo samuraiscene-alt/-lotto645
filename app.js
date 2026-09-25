@@ -562,6 +562,7 @@ function renderSets(hits){
             ${n}
           </span>
         `).join("")}
+        <span class="setRarity"><small>희소성</small><strong>${rarityPercentile(s)}%</strong></span>
 
       </div>
 
