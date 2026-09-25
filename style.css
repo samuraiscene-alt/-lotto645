@@ -12,3 +12,6 @@
 .rarityResult .rarityChosen{line-height:1.5}.rarityResult .rarityChosen b{font-size:15px}.rarityResult.rarityNotice{display:block;background:#fff4dc;color:#9a5b00;font-weight:800;font-size:12px}
 
 .set{position:relative;padding-right:92px}.setRarity{margin-left:auto;min-width:62px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;line-height:1.05}.setRarity small{font-size:10px;color:#8e8e93;font-weight:700}.setRarity strong{margin-top:4px;font-size:16px;color:#0a84ff;font-weight:900}@media(max-width:430px){.set{padding-right:74px}.setRarity{min-width:54px}.setRarity strong{font-size:15px}}
+
+/* pin rarity label into the reserved right side of each recommendation card */
+#sets .set{position:relative;padding-right:86px!important;min-height:58px}#sets .setRarity{position:absolute!important;right:14px;top:50%;transform:translateY(-50%);display:flex!important;flex-direction:column;align-items:flex-end;z-index:2}#sets .setRarity small{display:block!important;font-size:10px;color:#8e8e93}#sets .setRarity strong{display:block!important;margin-top:3px;font-size:16px;color:#0a84ff;font-weight:900}
