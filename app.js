@@ -218,6 +218,32 @@ async function loadAutoData(){
   }
 }
 
+function getIncludeNumbers(){
+  return [...new Set($("include").value.split(/[,\s]+/).map(Number).filter(n=>n>=1&&n<=45))].sort((a,b)=>a-b);
+}
+function setIncludeNumbers(nums){
+  const unique=[...new Set(nums)].filter(n=>n>=1&&n<=45&&!getExcludeNumbers().includes(n)).sort((a,b)=>a-b).slice(0,6);
+  $("include").value=unique.join(",");
+  updateIncludeCount();renderIncludePicker();
+}
+function updateIncludeCount(){
+  const nums=getIncludeNumbers();
+  $("includeCount").textContent=`고정수 ${nums.length}개`;
+  $("includeSelected").textContent=nums.length?`고정수: ${nums.join(", ")} · 총 ${nums.length}개`:"선택된 고정수 없음 · 최대 6개";
+}
+function toggleIncludeNumber(n){
+  const nums=getIncludeNumbers();
+  if(nums.includes(n)){setIncludeNumbers(nums.filter(x=>x!==n));return;}
+  if(getExcludeNumbers().includes(n)){alert("제외수로 선택된 번호입니다.");return;}
+  if(nums.length>=6){alert("고정수는 최대 6개까지 선택할 수 있습니다.");return;}
+  setIncludeNumbers([...nums,n]);
+}
+function renderIncludePicker(){
+  const selected=new Set(getIncludeNumbers()), excluded=new Set(getExcludeNumbers());
+  $("includeGrid").innerHTML=Array.from({length:45},(_,i)=>i+1).map(n=>`<button type="button" class="includeNum ${selected.has(n)?"selected":""}" data-number="${n}" ${excluded.has(n)?"disabled":""}>${n}</button>`).join("");
+  $("includeGrid").querySelectorAll(".includeNum").forEach(btn=>btn.onclick=()=>toggleIncludeNumber(Number(btn.dataset.number)));
+}
+
 function getExcludeNumbers(){
   return [...new Set(
     $("exclude")
@@ -238,6 +264,7 @@ function setExcludeNumbers(nums){
 
   updateExcludeCount();
   renderExcludePicker();
+  renderIncludePicker();
 }
 
 function updateExcludeCount(){
@@ -366,22 +393,28 @@ function balancedSet(s){
 
 function generate(){
   if(!rows.length) analyze();
-  const ex=excludes();
-  const pool=Array.from({length:45},(_,i)=>i+1).filter(n=>!ex.has(n));
-  if(pool.length<6){alert("사용 가능한 번호가 6개 미만입니다.");return;}
+  const ex=excludes(), fixed=getIncludeNumbers();
+  if(fixed.some(n=>ex.has(n))){alert("고정수와 제외수에 같은 번호가 있습니다.");return;}
+  const pool=Array.from({length:45},(_,i)=>i+1).filter(n=>!ex.has(n)&&!fixed.includes(n));
+  const need=6-fixed.length;
+  if(pool.length<need){alert("사용 가능한 번호가 부족합니다.");return;}
   const weights=recommendationWeights();
   generated=[];
-  const cnt=Number($("setCount").value), seen=new Set();
+  const cnt=Number($("setCount").value),seen=new Set();
   let attempts=0;
-  while(generated.length<cnt && attempts<5000){
+  while(generated.length<cnt&&attempts<5000){
     attempts++;
-    const s=weightedPick(pool,weights,6), key=s.join(",");
+    const picked=weightedPick(pool,weights,need);
+    const s=[...fixed,...picked].sort((a,b)=>a-b),key=s.join(",");
     if(!seen.has(key)&&balancedSet(s)){seen.add(key);generated.push(s);}
   }
-  while(generated.length<cnt){
-    const s=weightedPick(pool,weights,6),key=s.join(",");
+  while(generated.length<cnt&&attempts<20000){
+    attempts++;
+    const picked=weightedPick(pool,weights,need);
+    const s=[...fixed,...picked].sort((a,b)=>a-b),key=s.join(",");
     if(!seen.has(key)){seen.add(key);generated.push(s);}
   }
+  if(!generated.length){alert("현재 고정수/제외수 조건으로 조합을 만들 수 없습니다.");return;}
   renderSets();
   $("saveBtn").disabled=false;
   $("saveInfo").textContent=latestDrawData?latestDrawData.draw+1+"회용으로 저장 가능":"저장 가능";
@@ -707,6 +740,9 @@ $("reloadBtn").onclick =
 
 $("generateBtn").onclick =
   generate;
+$("includeToggleBtn").onclick=()=>{
+  const picker=$("includePicker");picker.hidden=!picker.hidden;renderIncludePicker();updateIncludeCount();
+};
 $("excludeToggleBtn").onclick = () => {
   const picker = $("excludePicker");
   picker.hidden = !picker.hidden;
@@ -767,5 +803,7 @@ document.querySelectorAll(".strategyBtn").forEach(btn=>{
 document.addEventListener("DOMContentLoaded", () => {
   renderExcludePicker();
   updateExcludeCount();
+  renderIncludePicker();
+  updateIncludeCount();
   loadAutoData();
 });
