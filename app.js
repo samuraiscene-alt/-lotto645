@@ -4,6 +4,7 @@ let current = [];
 let generated = [];
 let latestDrawData = null;
 let recommendationStrategy = "balanced";
+let rareMode = false;
 
 const $ = id => document.getElementById(id);
 const STORAGE_KEY = "lotto645_saved_sets_v2";
@@ -382,6 +383,23 @@ function recommendationWeights(){
   return Array.from({length:46},(_,n)=>n===0?0:1+(s52[n]*mix[0]+s26[n]*mix[1]+s13[n]*mix[2])*3);
 }
 
+function rareSelectionScore(s){
+  const sorted=[...s].sort((a,b)=>a-b);
+  const gaps=sorted.slice(1).map((n,i)=>n-sorted[i]);
+  const sum=sorted.reduce((a,b)=>a+b,0);
+  const minGap=Math.min(...gaps), maxGap=Math.max(...gaps);
+  const birthday=sorted.filter(n=>n<=31).length;
+  // 262~1120회 학습계수의 방향/크기를 사용. 낮을수록 수동 공동선택 위험이 낮은 쪽.
+  const predictedManualShare=.94746-(.00279*sum)+(.02451*minGap)-(.00647*maxGap)-(.05694*birthday);
+  return Math.max(0,Math.min(100,Math.round((1-predictedManualShare)*100)));
+}
+
+function rareAccept(s,rnd=Math.random){
+  if(!rareMode) return true;
+  const score=rareSelectionScore(s);
+  return rnd() < Math.max(.08,Math.min(.95,(score-35)/55));
+}
+
 function balancedSet(s){
   const odd=s.filter(n=>n%2).length;
   const low=s.filter(n=>n<=22).length;
@@ -406,13 +424,13 @@ function generate(){
     attempts++;
     const picked=weightedPick(pool,weights,need);
     const s=[...fixed,...picked].sort((a,b)=>a-b),key=s.join(",");
-    if(!seen.has(key)&&balancedSet(s)){seen.add(key);generated.push(s);}
+    if(!seen.has(key)&&balancedSet(s)&&rareAccept(s)){seen.add(key);generated.push(s);}
   }
   while(generated.length<cnt&&attempts<20000){
     attempts++;
     const picked=weightedPick(pool,weights,need);
     const s=[...fixed,...picked].sort((a,b)=>a-b),key=s.join(",");
-    if(!seen.has(key)){seen.add(key);generated.push(s);}
+    if(!seen.has(key)&&rareAccept(s)){seen.add(key);generated.push(s);}
   }
   if(!generated.length){alert("현재 고정수/제외수 조건으로 조합을 만들 수 없습니다.");return;}
   renderSets();
@@ -474,11 +492,11 @@ function runBacktest(){
     while(sets.length<10&&attempts<5000){
       attempts++;
       const s=seededPick(Array.from({length:45},(_,i)=>i+1),weights,6,rnd),key=s.join(",");
-      if(!seen.has(key)&&balancedSet(s)){seen.add(key);sets.push(s);}
+      if(!seen.has(key)&&balancedSet(s)&&rareAccept(s,rnd)){seen.add(key);sets.push(s);}
     }
     while(sets.length<10){
       const s=seededPick(Array.from({length:45},(_,i)=>i+1),weights,6,rnd),key=s.join(",");
-      if(!seen.has(key)){seen.add(key);sets.push(s);}
+      if(!seen.has(key)&&rareAccept(s,rnd)){seen.add(key);sets.push(s);}
     }
     let best=0,bestPrize=0;
     for(const s of sets){
@@ -792,6 +810,7 @@ document.querySelectorAll(".rankPeriodBtn").forEach(btn=>{
 });
 
 $("backtestBtn").onclick=runBacktest;
+$("rareMode").onchange=e=>{rareMode=e.target.checked;};
 
 document.querySelectorAll(".strategyBtn").forEach(btn=>{
   btn.onclick=()=>{
