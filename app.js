@@ -622,9 +622,11 @@ function saveGenerated(){
   );
 
   $("saveInfo").textContent =
-    `${payload.targetDraw || "다음"}회 추천번호 저장 완료`;
+    `✓ ${payload.targetDraw || "다음"}회 추천번호 저장 완료`;
 
   autoCheckSaved();
+  $("savedInlineBody").hidden=false;
+  $("savedInlineToggle").classList.add("open");
 }
 
 function getSaved(){
@@ -643,100 +645,40 @@ function getSaved(){
   }
 }
 
-function autoCheckSaved(){
-
-  const saved =
-    getSaved();
-
-  if(!saved?.sets?.length){
-
-    $("savedCheck").className =
-      "empty";
-
-    $("savedCheck").textContent =
-      "저장된 추천번호가 없습니다.";
-
-    return;
-  }
-
-  const target =
-    sourceRows.find(
-      r=>r.draw===saved.targetDraw
-    );
-
-  const dateText =
-    new Date(saved.savedAt)
-      .toLocaleString(
-        "ko-KR",
-        {
-          month:"numeric",
-          day:"numeric",
-          hour:"2-digit",
-          minute:"2-digit"
-        }
-      );
-
-  if(!target){
-
-    $("savedCheck").className="";
-
-    $("savedCheck").innerHTML =
-      `
-      <div class="savedSummary">
-
-        <div class="savedMeta">
-          ${saved.targetDraw || "다음"}회 추천 · ${dateText} 저장
-        </div>
-
-        아직 해당 회차 당첨 결과가 없습니다.
-
-      </div>
-      `;
-
-    return;
-  }
-
-  const win =
-    new Set(target.nums);
-
-  $("savedCheck").className="";
-
-  $("savedCheck").innerHTML =
-    `
-    <div class="savedSummary">
-
-      <div class="savedMeta">
-        ${target.draw}회 자동 대조 · 당첨번호 ${target.nums.join(" · ")} + ${target.bonus}
-      </div>
-
-      ${saved.sets.map((s,i)=>{
-
-        const hit =
-          s.filter(
-            n=>win.has(n)
-          );
-
-        const bonus =
-          s.includes(target.bonus)
-          &&
-          !win.has(target.bonus);
-
-        return `
-          <div>
-            ${i+1}세트:
-            <span class="${hit.length>=3?"matchGood":""}">
-              ${hit.length}개 일치${bonus?" + 보너스":""}
-            </span>
-            ·
-            ${hit.join(", ")||"일치 없음"}
-          </div>
-        `;
-
-      }).join("")}
-
-    </div>
-    `;
+function prizeLabelForSaved(set,target){
+  const p=prizeFor(set,target);
+  return p ? `${p}등` : "미당첨";
 }
+
+function autoCheckSaved(){
+  const saved=getSaved();
+  const box=$("savedInline"),body=$("savedInlineBody");
+  if(!box||!body) return;
+  if(!saved?.sets?.length){
+    box.hidden=true;
+    body.hidden=true;
+    return;
+  }
+  box.hidden=false;
+  const target=sourceRows.find(r=>r.draw===saved.targetDraw);
+  const dateText=new Date(saved.savedAt).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
+  const win=target?new Set(target.nums):null;
+  body.innerHTML=`
+    <div class="savedInlineMeta">
+      <b>${saved.targetDraw || "다음"}회 추천 · ${dateText} 저장</b>
+      <span>${target ? "추첨 결과 자동 대조 완료" : "추첨 전 · 당첨번호 업데이트 후 자동 대조"}</span>
+    </div>
+    ${target?`<div class="savedWinning">당첨번호 ${target.nums.join(" · ")} + ${target.bonus}</div>`:""}
+    <div class="savedSetList">
+      ${saved.sets.map((s,i)=>{
+        const hit=win?s.filter(n=>win.has(n)):[];
+        const bonus=target&&s.includes(target.bonus)&&!win.has(target.bonus);
+        const result=target?`${hit.length}개 일치${bonus?" + 보너스":""} · ${prizeLabelForSaved(s,target)}`:"추첨 전";
+        return `<div class="savedSetRow"><b>${i+1}.</b><span>${s.join(" · ")}</span><strong>${result}</strong></div>`;
+      }).join("")}
+    </div>`;
+}
+
 
 function check(){
 
@@ -813,6 +755,11 @@ $("excludeToggleBtn").onclick = () => {
 
 $("saveBtn").onclick =
   saveGenerated;
+$("savedInlineToggle").onclick=()=>{
+  const body=$("savedInlineBody");
+  body.hidden=!body.hidden;
+  $("savedInlineToggle").classList.toggle("open",!body.hidden);
+};
 
 $("checkBtn").onclick =
   check;
