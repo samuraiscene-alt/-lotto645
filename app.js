@@ -9,6 +9,7 @@ let rarityNumbers = [];
 
 const $ = id => document.getElementById(id);
 const STORAGE_KEY = "lotto645_saved_sets_v2";
+const HISTORY_KEY = "lotto645_recommendation_history_v1";
 
 function formatInputRow(r){
   return `${r.draw} - ${r.nums.join(" ")} - ${r.bonus}`;
@@ -589,60 +590,65 @@ function renderSets(hits){
     `).join("");
 }
 
-function saveGenerated(){
+function getHistory(){
+  try{
+    const v=JSON.parse(localStorage.getItem(HISTORY_KEY)||"[]");
+    return Array.isArray(v)?v:[];
+  }catch{return [];}
+}
 
-  if(!generated.length){
-    return;
-  }
+function saveHistory(history){
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
+}
 
-  const baseDraw =
-    latestDrawData?.draw ||
-    rows[0]?.draw ||
-    null;
-
-  const payload = {
-
-    savedAt:
-      new Date().toISOString(),
-
-    baseDraw,
-
-    targetDraw:
-      baseDraw
-        ? baseDraw+1
-        : null,
-
-    sets:
-      generated
+function recommendationSnapshot(){
+  return {
+    strategy:recommendationStrategy,
+    rareMode,
+    period:$("period")?.value||null,
+    fixed:getIncludeNumbers(),
+    excluded:getExcludeNumbers(),
+    setCount:Number($("setCount")?.value||generated.length),
+    rarity:generated.map(s=>rarityPercentile(s))
   };
+}
 
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(payload)
-  );
+function migrateLegacySaved(){
+  const old=getSaved();
+  if(!old?.sets?.length) return;
+  const history=getHistory();
+  if(!history.some(x=>x.targetDraw===old.targetDraw)){
+    history.push({...old,settings:old.settings||null});
+    history.sort((a,b)=>(a.targetDraw||0)-(b.targetDraw||0));
+    saveHistory(history);
+  }
+}
 
-  $("saveInfo").textContent =
-    `✓ ${payload.targetDraw || "다음"}회 추천번호 저장 완료`;
-
+function saveGenerated(){
+  if(!generated.length) return;
+  const baseDraw=latestDrawData?.draw||rows[0]?.draw||null;
+  const payload={
+    savedAt:new Date().toISOString(),
+    baseDraw,
+    targetDraw:baseDraw?baseDraw+1:null,
+    sets:generated.map(s=>[...s]),
+    settings:recommendationSnapshot()
+  };
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(payload));
+  const history=getHistory();
+  const idx=history.findIndex(x=>x.targetDraw===payload.targetDraw);
+  if(idx>=0) history[idx]=payload; else history.push(payload);
+  history.sort((a,b)=>(a.targetDraw||0)-(b.targetDraw||0));
+  saveHistory(history);
+  $("saveInfo").textContent=`✓ ${payload.targetDraw||"다음"}회 추천번호 저장 완료 · 누적 ${history.length}회`;
   autoCheckSaved();
   $("savedInlineBody").hidden=false;
   $("savedInlineToggle").classList.add("open");
 }
 
 function getSaved(){
-
-  try{
-
-    return JSON.parse(
-      localStorage.getItem(STORAGE_KEY)
-      ||
-      "null"
-    );
-
-  }catch{
-
-    return null;
-  }
+  try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");}
+  catch{return null;}
 }
 
 function prizeLabelForSaved(set,target){
@@ -651,30 +657,29 @@ function prizeLabelForSaved(set,target){
 }
 
 function autoCheckSaved(){
-  const saved=getSaved();
+  migrateLegacySaved();
+  const history=getHistory();
   const box=$("savedInline"),body=$("savedInlineBody");
   if(!box||!body) return;
-  if(!saved?.sets?.length){
-    box.hidden=true;
-    body.hidden=true;
-    return;
-  }
+  if(!history.length){box.hidden=true;body.hidden=true;return;}
   box.hidden=false;
+  const saved=history[history.length-1];
   const target=sourceRows.find(r=>r.draw===saved.targetDraw);
   const dateText=new Date(saved.savedAt).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
   const win=target?new Set(target.nums):null;
+  const completed=history.filter(h=>sourceRows.some(r=>r.draw===h.targetDraw)).length;
   body.innerHTML=`
     <div class="savedInlineMeta">
-      <b>${saved.targetDraw || "다음"}회 추천 · ${dateText} 저장</b>
-      <span>${target ? "추첨 결과 자동 대조 완료" : "추첨 전 · 당첨번호 업데이트 후 자동 대조"}</span>
+      <b>${saved.targetDraw||"다음"}회 추천 · ${dateText} 저장</b>
+      <span>누적 ${history.length}회 · 결과 대조 완료 ${completed}회 · ${target?"이번 기록 자동 대조 완료":"추첨 전"}</span>
     </div>
     ${target?`<div class="savedWinning">당첨번호 ${target.nums.join(" · ")} + ${target.bonus}</div>`:""}
     <div class="savedSetList">
-      ${saved.sets.map((s,i)=>{
-        const hit=win?s.filter(n=>win.has(n)):[];
-        const bonus=target&&s.includes(target.bonus)&&!win.has(target.bonus);
-        const result=target?`${hit.length}개 일치${bonus?" + 보너스":""} · ${prizeLabelForSaved(s,target)}`:"추첨 전";
-        return `<div class="savedSetRow"><b>${i+1}.</b><span>${s.join(" · ")}</span><strong>${result}</strong></div>`;
+      ${saved.sets.map((set,i)=>{
+        const hit=win?set.filter(n=>win.has(n)):[];
+        const bonus=target&&set.includes(target.bonus)&&!win.has(target.bonus);
+        const result=target?`${hit.length}개 일치${bonus?" + 보너스":""} · ${prizeLabelForSaved(set,target)}`:"추첨 전";
+        return `<div class="savedSetRow"><b>${i+1}.</b><span>${set.join(" · ")}</span><strong>${result}</strong></div>`;
       }).join("")}
     </div>`;
 }
