@@ -7,7 +7,7 @@
 <title>로또 6/45 분석기</title>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="style.css?v=20260925-ios-wheel-r2">
+<link rel="stylesheet" href="style.css?v=20260926-saved-inline">
 </head>
 <body>
 <div class="wrap">
@@ -57,10 +57,14 @@
   <div id="includePicker" class="includePicker" hidden><div class="includePickerTitle">우선 추천할 고정수 후보를 선택하세요</div><div id="includeGrid" class="includeGrid"></div><div id="includeSelected" class="includeSelected">선택된 고정수 없음</div></div>
   <div id="excludePicker" class="excludePicker" hidden><div class="excludePickerTitle">제외할 번호를 선택하세요 <span>(최대 39개)</span></div><div id="excludeGrid" class="excludeGrid"></div><div id="excludeSelected" class="excludeSelected">선택된 번호 없음 · 최대 39개</div></div>
   <div class="saveRow"><button id="saveBtn" disabled>이번 주 추천번호 저장</button><span id="saveInfo" class="hint"></span></div>
+  <div id="savedInline" class="savedInline" hidden>
+    <button type="button" id="savedInlineToggle" class="savedInlineToggle"><span>저장한 추천번호 보기</span><b>⌄</b></button>
+    <div id="savedInlineBody" class="savedInlineBody" hidden></div>
+  </div>
   <div id="sets" class="sets"></div>
 </section>
 
-<section class="panel rarityPanel"><div class="sectionHead"><div><h2>내 번호 희소성 분석</h2><p class="hint">6개 번호를 선택하면 공동선택 희소성을 즉시 분석합니다.</p></div></div><div id="rarityGrid" class="rarityGrid"></div><div id="rarityResult" class="rarityResult empty">번호 6개를 선택하세요.</div><p class="hint">희소성은 과거 수동 공동당첨 패턴과의 비교 지표이며 당첨확률과는 무관합니다.</p></section><section class="panel"><h2>지난 추천번호 자동 대조</h2><div id="savedCheck" class="empty">저장된 추천번호가 없습니다.</div></section>
+<section class="panel rarityPanel"><div class="sectionHead"><div><h2>내 번호 희소성 분석</h2><p class="hint">6개 번호를 선택하면 공동선택 희소성을 즉시 분석합니다.</p></div></div><div id="rarityGrid" class="rarityGrid"></div><div id="rarityResult" class="rarityResult empty">번호 6개를 선택하세요.</div><p class="hint">희소성은 과거 수동 공동당첨 패턴과의 비교 지표이며 당첨확률과는 무관합니다.</p></section>
 
 <section class="panel backtestPanel">
   <div class="sectionHead"><div><h2>추천 전략 백테스트</h2><p class="hint">각 회차 이전 데이터만 사용해 10세트를 생성하고 실제 당첨번호와 대조합니다.</p></div></div>
@@ -91,6 +95,6 @@
   </div>
 </div>
 </div>
-<script src="app.js?v=20260925-backtest-random"></script>
+<script src="app.js?v=20260926-saved-inline"></script>
 </body>
 </html>
