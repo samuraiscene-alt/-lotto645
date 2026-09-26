@@ -656,32 +656,51 @@ function prizeLabelForSaved(set,target){
   return p ? `${p}등` : "미당첨";
 }
 
+function historyStrategyLabel(v){
+  return ({balanced:"종합형",recent:"최근형",long:"장기형"})[v]||"기록 없음";
+}
+function historyPeriodLabel(v){
+  return ({"52":"최근 1년","26":"최근 6개월","13":"최근 3개월","10":"최근 10회","20":"최근 20회","30":"최근 30회","all":"전체"})[v]||"기록 없음";
+}
+function savedHistoryCard(saved){
+  const target=sourceRows.find(r=>r.draw===saved.targetDraw);
+  const win=target?new Set(target.nums):null, settings=saved.settings||{};
+  const dateText=saved.savedAt?new Date(saved.savedAt).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+  return `<details class="historyDraw">
+    <summary><span><b>${saved.targetDraw||"다음"}회</b><small>${target?"대조 완료":"추첨 전"}</small></span><strong>추천 ${saved.sets.length}세트</strong></summary>
+    <div class="historyDrawBody">
+      <div class="historySettings">
+        <span>전략 <b>${historyStrategyLabel(settings.strategy)}</b></span>
+        <span>기간 <b>${historyPeriodLabel(settings.period)}</b></span>
+        <span>희소성 <b>${settings.rareMode?"ON":"OFF"}</b></span>
+        <span>저장 <b>${dateText}</b></span>
+      </div>
+      <div class="historyNumbers"><b>고정수</b> ${settings.fixed?.length?settings.fixed.join(" · "):"없음"}</div>
+      <div class="historyNumbers"><b>제외수</b> ${settings.excluded?.length?settings.excluded.join(" · "):"없음"}</div>
+      ${target?`<div class="savedWinning">당첨번호 ${target.nums.join(" · ")} + ${target.bonus}</div>`:""}
+      <div class="savedSetList">
+        ${saved.sets.map((set,i)=>{
+          const hit=win?set.filter(n=>win.has(n)):[];
+          const bonus=target&&set.includes(target.bonus)&&!win.has(target.bonus);
+          const rarity=settings.rarity?.[i];
+          const result=target?`${hit.length}개 일치${bonus?" + 보너스":""} · ${prizeLabelForSaved(set,target)}`:"추첨 전";
+          return `<div class="savedSetRow"><b>${i+1}.</b><span>${set.join(" · ")}</span><strong>${rarity!=null?"희소성 "+rarity+"% · ":""}${result}</strong></div>`;
+        }).join("")}
+      </div>
+    </div>
+  </details>`;
+}
 function autoCheckSaved(){
   migrateLegacySaved();
-  const history=getHistory();
+  const history=getHistory().sort((a,b)=>(b.targetDraw||0)-(a.targetDraw||0));
   const box=$("savedInline"),body=$("savedInlineBody");
-  if(!box||!body) return;
+  if(!box||!body)return;
   if(!history.length){box.hidden=true;body.hidden=true;return;}
   box.hidden=false;
-  const saved=history[history.length-1];
-  const target=sourceRows.find(r=>r.draw===saved.targetDraw);
-  const dateText=new Date(saved.savedAt).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
-  const win=target?new Set(target.nums):null;
   const completed=history.filter(h=>sourceRows.some(r=>r.draw===h.targetDraw)).length;
   body.innerHTML=`
-    <div class="savedInlineMeta">
-      <b>${saved.targetDraw||"다음"}회 추천 · ${dateText} 저장</b>
-      <span>누적 ${history.length}회 · 결과 대조 완료 ${completed}회 · ${target?"이번 기록 자동 대조 완료":"추첨 전"}</span>
-    </div>
-    ${target?`<div class="savedWinning">당첨번호 ${target.nums.join(" · ")} + ${target.bonus}</div>`:""}
-    <div class="savedSetList">
-      ${saved.sets.map((set,i)=>{
-        const hit=win?set.filter(n=>win.has(n)):[];
-        const bonus=target&&set.includes(target.bonus)&&!win.has(target.bonus);
-        const result=target?`${hit.length}개 일치${bonus?" + 보너스":""} · ${prizeLabelForSaved(set,target)}`:"추첨 전";
-        return `<div class="savedSetRow"><b>${i+1}.</b><span>${set.join(" · ")}</span><strong>${result}</strong></div>`;
-      }).join("")}
-    </div>`;
+    <div class="historyOverview"><b>회차별 저장 기록</b><span>누적 ${history.length}회 · 결과 대조 완료 ${completed}회</span></div>
+    <div class="historyList">${history.map(savedHistoryCard).join("")}</div>`;
 }
 
 
