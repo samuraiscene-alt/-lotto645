@@ -666,7 +666,7 @@ function savedHistoryCard(saved){
   const target=sourceRows.find(r=>r.draw===saved.targetDraw);
   const win=target?new Set(target.nums):null, settings=saved.settings||{};
   const dateText=saved.savedAt?new Date(saved.savedAt).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):"";
-  return `<details class="historyDraw">
+  return `<div class="historySwipe" data-draw="${saved.targetDraw}"><button type="button" class="historyDelete" aria-label="${saved.targetDraw}회 기록 삭제">삭제</button><details class="historyDraw">
     <summary><span><b>${saved.targetDraw||"다음"}회</b><small>${target?"대조 완료":"추첨 전"}</small></span><strong>추천 ${saved.sets.length}세트</strong></summary>
     <div class="historyDrawBody">
       <div class="historySettings">
@@ -688,7 +688,7 @@ function savedHistoryCard(saved){
         }).join("")}
       </div>
     </div>
-  </details>`;
+  </details></div>`;
 }
 function autoCheckSaved(){
   migrateLegacySaved();
@@ -701,6 +701,31 @@ function autoCheckSaved(){
   body.innerHTML=`
     <div class="historyOverview"><b>회차별 저장 기록</b><span>누적 ${history.length}회 · 결과 대조 완료 ${completed}회</span></div>
     <div class="historyList">${history.map(savedHistoryCard).join("")}</div>`;
+  bindHistorySwipe();
+}
+
+function deleteHistoryDraw(draw){
+  let history=getHistory().filter(h=>h.targetDraw!==draw);
+  saveHistory(history);
+  const current=getSaved();
+  if(current?.targetDraw===draw){
+    localStorage.removeItem(STORAGE_KEY);
+    const newest=[...history].sort((a,b)=>(b.targetDraw||0)-(a.targetDraw||0))[0];
+    if(newest) localStorage.setItem(STORAGE_KEY,JSON.stringify(newest));
+  }
+  autoCheckSaved();
+  $("saveInfo").textContent=history.length?`✓ ${draw}회 기록 삭제 완료 · 누적 ${history.length}회`:`✓ ${draw}회 기록 삭제 완료`;
+}
+function bindHistorySwipe(){
+  document.querySelectorAll(".historySwipe").forEach(row=>{
+    const card=row.querySelector(".historyDraw"),del=row.querySelector(".historyDelete");
+    let startX=0,startY=0,dx=0,tracking=false;
+    const reset=()=>{card.style.transition="transform .22s ease";card.style.transform="translateX(0)";row.classList.remove("swiped");setTimeout(()=>card.style.transition="",230);};
+    card.addEventListener("touchstart",e=>{if(e.touches.length!==1)return;startX=e.touches[0].clientX;startY=e.touches[0].clientY;dx=0;tracking=true;card.style.transition="none";},{passive:true});
+    card.addEventListener("touchmove",e=>{if(!tracking)return;const x=e.touches[0].clientX-startX,y=e.touches[0].clientY-startY;if(Math.abs(y)>Math.abs(x)&&Math.abs(y)>8){tracking=false;reset();return;}dx=Math.min(0,Math.max(-88,x));card.style.transform=`translateX(${dx}px)`;},{passive:true});
+    card.addEventListener("touchend",()=>{if(!tracking)return;tracking=false;card.style.transition="transform .22s ease";if(dx<-44){card.style.transform="translateX(-78px)";row.classList.add("swiped");}else reset();});
+    del.onclick=()=>{const draw=Number(row.dataset.draw);if(!confirm(`${draw}회 저장 기록을 완전히 삭제할까요?\n삭제하면 누적 통계에서도 제외되며 되돌릴 수 없습니다.`))return;deleteHistoryDraw(draw);};
+  });
 }
 
 
