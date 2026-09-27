@@ -12,6 +12,25 @@ const STORAGE_KEY = "lotto645_saved_sets_v2";
 const HISTORY_KEY = "lotto645_recommendation_history_v1";
 const PERFORMANCE_MIN_DRAWS = 3;
 const PERFORMANCE_MAX_ADJUST = 0.08;
+const RECOVERY_1243_KEY = "lotto645_recovery_1243_v1";
+const RECOVERY_1243 = {
+  savedAt:"2026-09-26T14:38:00+09:00",
+  baseDraw:1242,
+  targetDraw:1243,
+  sets:[
+    [10,11,31,36,38,42],
+    [10,12,22,37,42,43],
+    [1,7,20,29,34,42],
+    [19,22,29,31,39,42],
+    [2,7,15,19,33,44],
+    [16,19,20,31,40,43],
+    [2,7,10,19,29,31],
+    [19,20,24,30,39,43],
+    [13,20,23,32,37,43],
+    [2,12,15,19,28,32]
+  ],
+  settings:{strategy:"balanced",rareMode:true,period:"52",fixed:[],excluded:[5,6,8,9,14,17,21,26,35,45],setCount:10,rarity:[92,76,5,89,4,89,26,92,21,7]}
+};
 
 function formatInputRow(r){
   return `${r.draw} - ${r.nums.join(" ")} - ${r.bonus}`;
@@ -629,6 +648,14 @@ function recommendationSnapshot(){
   };
 }
 
+function recoverKnownHistory(){
+  const history=getHistory();
+  if(history.length || localStorage.getItem(RECOVERY_1243_KEY)==="deleted") return;
+  saveHistory([RECOVERY_1243]);
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(RECOVERY_1243));
+  localStorage.setItem(RECOVERY_1243_KEY,"restored");
+}
+
 function migrateLegacySaved(){
   const old=getSaved();
   if(!old?.sets?.length) return;
@@ -723,6 +750,7 @@ function savedHistoryCard(saved){
   </details></div>`;
 }
 function autoCheckSaved(){
+  recoverKnownHistory();
   migrateLegacySaved();
   const history=getHistory().sort((a,b)=>(b.targetDraw||0)-(a.targetDraw||0));
   const box=$("savedInline"),body=$("savedInlineBody");
@@ -737,6 +765,7 @@ function autoCheckSaved(){
 }
 
 function deleteHistoryDraw(draw){
+  if(draw===1243) localStorage.setItem(RECOVERY_1243_KEY,"deleted");
   let history=getHistory().filter(h=>h.targetDraw!==draw);
   saveHistory(history);
   const current=getSaved();
