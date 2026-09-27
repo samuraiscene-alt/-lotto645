@@ -50,7 +50,7 @@
 .savedInlineToggle b{font-size:18px;color:#8e8e93;transition:.2s}.savedInlineToggle.open b{transform:rotate(180deg)}
 .savedInlineBody{border-top:1px solid rgba(15,23,42,.07);padding:12px}
 .savedInlineMeta{display:flex;flex-direction:column;gap:3px;margin-bottom:9px}.savedInlineMeta b{font-size:13px}.savedInlineMeta span{font-size:11px;color:#6b7280}
-.savedWinning{padding:9px 10px;margin-bottom:8px;border-radius:11px;background:#eaf4ff;font-size:12px;font-weight:800}
+.savedWinning{padding:11px 12px;margin-bottom:10px;border-radius:11px;background:#eaf4ff;font-size:15px;font-weight:800}
 .savedSetList{display:grid;gap:6px}.savedSetRow{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:5px;background:#fff;border-radius:11px;padding:9px}
 .savedSetRow>span{font-size:12px;font-weight:750;white-space:nowrap}.savedSetRow>strong{font-size:11px;color:#0a84ff;text-align:right}
 @media(max-width:430px){.savedSetRow{grid-template-columns:22px 1fr}.savedSetRow>strong{grid-column:2;text-align:left}.savedSetRow>span{font-size:11px}}
@@ -58,7 +58,7 @@
 /* per-draw recommendation history */
 .historyOverview{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px}.historyOverview b{font-size:13px}.historyOverview span{font-size:10px;color:#6b7280}
 .historyList{display:grid;gap:7px}.historyDraw{background:#fff;border:1px solid rgba(15,23,42,.06);border-radius:13px;overflow:hidden}.historyDraw summary{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:11px 12px;cursor:pointer}.historyDraw summary::-webkit-details-marker{display:none}.historyDraw summary>span{display:flex;align-items:center;gap:7px}.historyDraw summary b{font-size:14px}.historyDraw summary small{font-size:10px;padding:4px 6px;border-radius:999px;background:#eef6ff;color:#0a84ff}.historyDraw summary>strong{font-size:11px;color:#6b7280}.historyDraw summary:after{content:"›";font-size:20px;color:#8e8e93;margin-left:6px;transform:rotate(90deg)}.historyDraw[open] summary:after{transform:rotate(-90deg)}
-.historyDrawBody{padding:0 10px 10px;border-top:1px solid rgba(15,23,42,.06)}.historySettings{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:10px 0}.historySettings span,.historyNumbers{font-size:10px;color:#6b7280}.historySettings b,.historyNumbers b{color:#111827}.historyNumbers{padding:4px 0;line-height:1.5}
+.historyDrawBody{padding:0 10px 10px;border-top:1px solid rgba(15,23,42,.06)}.historySettings{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:10px 0}.historySettings span,.historyNumbers{font-size:14px;color:#6b7280}.historySettings b,.historyNumbers b{color:#111827}.historyNumbers{padding:4px 0;line-height:1.5}
 
 /* iOS swipe-to-delete saved history */
 .historySwipe{position:relative;overflow:hidden;border-radius:13px;background:transparent;touch-action:pan-y}.historySwipe .historyDraw{position:relative;z-index:2;margin:0;background:#fff;will-change:transform}.historyDelete{position:absolute;z-index:1;right:0;top:0;bottom:auto;height:58px;width:78px;border:0;border-radius:0 13px 13px 0;background:#ff3b30;color:#fff;font-weight:800;font-size:14px;padding:0}.historySwipe.swiped{background:transparent}.historySwipe.swiped .historyDelete{z-index:1}
@@ -66,5 +66,5 @@
 
 /* recommendation performance analysis */
 .historyAnalysis{margin:8px 0 10px;padding:11px;border-radius:12px;background:#f5f8ff;border:1px solid rgba(10,132,255,.10)}
-.historyAnalysisTitle{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:7px}.historyAnalysisTitle b{font-size:12px}.historyAnalysisTitle span{font-size:10px;color:#0a84ff;font-weight:800;text-align:right}
-.analysisLine{font-size:10px;color:#4b5563;line-height:1.55;padding:2px 0}.analysisLearning{margin-top:7px;padding-top:7px;border-top:1px solid rgba(15,23,42,.07);font-size:10px;color:#248a3d;font-weight:800;line-height:1.45}
+.historyAnalysisTitle{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:7px}.historyAnalysisTitle b{font-size:16px}.historyAnalysisTitle span{font-size:14px;color:#0a84ff;font-weight:800;text-align:right}
+.analysisLine{font-size:14px;color:#4b5563;line-height:1.6;padding:3px 0}.analysisLearning{margin-top:9px;padding-top:9px;border-top:1px solid rgba(15,23,42,.07);font-size:14px;color:#248a3d;font-weight:800;line-height:1.5}
