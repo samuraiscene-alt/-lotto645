@@ -61,7 +61,7 @@
 .historyDrawBody{padding:0 10px 10px;border-top:1px solid rgba(15,23,42,.06)}.historySettings{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:10px 0}.historySettings span,.historyNumbers{font-size:10px;color:#6b7280}.historySettings b,.historyNumbers b{color:#111827}.historyNumbers{padding:4px 0;line-height:1.5}
 
 /* iOS swipe-to-delete saved history */
-.historySwipe{position:relative;overflow:hidden;border-radius:13px;background:transparent;touch-action:pan-y}.historySwipe .historyDraw{position:relative;z-index:2;margin:0;background:#fff;will-change:transform}.historyDelete{position:absolute;z-index:3;right:0;top:0;bottom:auto;height:58px;width:78px;border:0;border-radius:0 13px 13px 0;background:#ff3b30;color:#fff;font-weight:800;font-size:14px;padding:0}.historySwipe.swiped{background:transparent}.historySwipe.swiped .historyDelete{z-index:1}
+.historySwipe{position:relative;overflow:hidden;border-radius:13px;background:transparent;touch-action:pan-y}.historySwipe .historyDraw{position:relative;z-index:2;margin:0;background:#fff;will-change:transform}.historyDelete{position:absolute;z-index:1;right:0;top:0;bottom:auto;height:58px;width:78px;border:0;border-radius:0 13px 13px 0;background:#ff3b30;color:#fff;font-weight:800;font-size:14px;padding:0}.historySwipe.swiped{background:transparent}.historySwipe.swiped .historyDelete{z-index:1}
 
 
 /* recommendation performance analysis */
