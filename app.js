@@ -779,12 +779,13 @@ function deleteHistoryDraw(draw){
 }
 function bindHistorySwipe(){
   document.querySelectorAll(".historySwipe").forEach(row=>{
-    const card=row.querySelector(".historyDraw"),del=row.querySelector(".historyDelete");
+    const card=row.querySelector(".historyDraw"),header=card?.querySelector("summary"),del=row.querySelector(".historyDelete");
+    if(!header||!del)return;
     let startX=0,startY=0,dx=0,tracking=false;
-    const reset=()=>{card.style.transition="transform .22s ease";card.style.transform="translateX(0)";row.classList.remove("swiped");setTimeout(()=>card.style.transition="",230);};
-    card.addEventListener("touchstart",e=>{if(e.touches.length!==1)return;startX=e.touches[0].clientX;startY=e.touches[0].clientY;dx=0;tracking=true;card.style.transition="none";},{passive:true});
-    card.addEventListener("touchmove",e=>{if(!tracking)return;const x=e.touches[0].clientX-startX,y=e.touches[0].clientY-startY;if(Math.abs(y)>Math.abs(x)&&Math.abs(y)>8){tracking=false;reset();return;}dx=Math.min(0,Math.max(-88,x));card.style.transform=`translateX(${dx}px)`;},{passive:true});
-    card.addEventListener("touchend",()=>{if(!tracking)return;tracking=false;card.style.transition="transform .22s ease";if(dx<-44){card.style.transform="translateX(-78px)";row.classList.add("swiped");}else reset();});
+    const reset=()=>{header.style.transition="transform .22s ease";header.style.transform="translateX(0)";row.classList.remove("swiped");setTimeout(()=>header.style.transition="",230);};
+    header.addEventListener("touchstart",e=>{if(e.touches.length!==1)return;startX=e.touches[0].clientX;startY=e.touches[0].clientY;dx=0;tracking=true;header.style.transition="none";},{passive:true});
+    header.addEventListener("touchmove",e=>{if(!tracking)return;const x=e.touches[0].clientX-startX,y=e.touches[0].clientY-startY;if(Math.abs(y)>Math.abs(x)&&Math.abs(y)>8){tracking=false;reset();return;}dx=Math.min(0,Math.max(-88,x));header.style.transform=`translateX(${dx}px)`;},{passive:true});
+    header.addEventListener("touchend",()=>{if(!tracking)return;tracking=false;header.style.transition="transform .22s ease";if(dx<-44){header.style.transform="translateX(-78px)";row.classList.add("swiped");}else reset();});
     del.onclick=()=>{const draw=Number(row.dataset.draw);if(!confirm(`${draw}회 저장 기록을 완전히 삭제할까요?\n삭제하면 누적 통계에서도 제외되며 되돌릴 수 없습니다.`))return;deleteHistoryDraw(draw);};
   });
 }
