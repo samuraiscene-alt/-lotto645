@@ -10,6 +10,8 @@ let rarityNumbers = [];
 const $ = id => document.getElementById(id);
 const STORAGE_KEY = "lotto645_saved_sets_v2";
 const HISTORY_KEY = "lotto645_recommendation_history_v1";
+const PERFORMANCE_MIN_DRAWS = 3;
+const PERFORMANCE_MAX_ADJUST = 0.08;
 
 function formatInputRow(r){
   return `${r.draw} - ${r.nums.join(" ")} - ${r.bonus}`;
@@ -381,6 +383,19 @@ function normalizedScore(count){
   return count.map((v,i)=>i===0?0:v/max);
 }
 
+function completedRecommendationHistory(){
+  return getHistory().filter(h=>h?.sets?.length&&sourceRows.some(r=>r.draw===h.targetDraw));
+}
+function performanceFeedback(){
+  const completed=completedRecommendationHistory(), multiplier=Array(46).fill(1);
+  if(completed.length<PERFORMANCE_MIN_DRAWS) return {active:false,completed:completed.length,multiplier};
+  const selected=Array(46).fill(0), hits=Array(46).fill(0);
+  for(const h of completed){const target=sourceRows.find(r=>r.draw===h.targetDraw);if(!target)continue;const win=new Set(target.nums);for(const set of h.sets)for(const n of set){selected[n]++;if(win.has(n))hits[n]++;}}
+  const totalSelected=selected.reduce((a,b)=>a+b,0), totalHits=hits.reduce((a,b)=>a+b,0), baseline=totalSelected?totalHits/totalSelected:0;
+  for(let n=1;n<=45;n++){if(selected[n]<2||baseline===0)continue;const rate=hits[n]/selected[n],confidence=Math.min(1,selected[n]/10),relative=Math.max(-1,Math.min(1,(rate-baseline)/Math.max(baseline,.01)));multiplier[n]=1+relative*PERFORMANCE_MAX_ADJUST*confidence;}
+  return {active:true,completed:completed.length,multiplier};
+}
+
 function recommendationWeights(){
   const s52=normalizedScore(countsFor(52)), s26=normalizedScore(countsFor(26)), s13=normalizedScore(countsFor(13));
   const mixes={
@@ -389,7 +404,8 @@ function recommendationWeights(){
     long:[.60,.25,.15]
   };
   const mix=mixes[recommendationStrategy]||mixes.balanced;
-  return Array.from({length:46},(_,n)=>n===0?0:1+(s52[n]*mix[0]+s26[n]*mix[1]+s13[n]*mix[2])*3);
+  const feedback=performanceFeedback();
+  return Array.from({length:46},(_,n)=>{if(n===0)return 0;const base=1+(s52[n]*mix[0]+s26[n]*mix[1]+s13[n]*mix[2])*3;return base*feedback.multiplier[n];});
 }
 
 function rareSelectionScore(s){
@@ -662,6 +678,22 @@ function historyStrategyLabel(v){
 function historyPeriodLabel(v){
   return ({"52":"최근 1년","26":"최근 6개월","13":"최근 3개월","10":"최근 10회","20":"최근 20회","30":"최근 30회","all":"전체"})[v]||"기록 없음";
 }
+function analyzeSavedRecommendation(saved,target){
+  const settings=saved.settings||{},win=new Set(target.nums),excluded=new Set(settings.excluded||[]),fixed=new Set(settings.fixed||[]);
+  const excludedWins=target.nums.filter(n=>excluded.has(n)),fixedWins=target.nums.filter(n=>fixed.has(n)),pickCounts=Array(46).fill(0);(saved.sets||[]).flat().forEach(n=>pickCounts[n]++);
+  const coveredWins=target.nums.filter(n=>pickCounts[n]>0),missedWins=target.nums.filter(n=>pickCounts[n]===0),setHits=(saved.sets||[]).map(set=>set.filter(n=>win.has(n)).length);
+  const best=Math.max(0,...setHits),avg=setHits.length?setHits.reduce((a,b)=>a+b,0)/setHits.length:0,prior=sourceRows.filter(r=>r.draw<target.draw).sort((a,b)=>b.draw-a.draw),priorWeights=historicalWeights(prior,settings.strategy||"balanced");
+  const ranked=Array.from({length:45},(_,i)=>i+1).sort((a,b)=>priorWeights[b]-priorWeights[a]||a-b),ranks=target.nums.map(n=>ranked.indexOf(n)+1),avgRank=ranks.reduce((a,b)=>a+b,0)/ranks.length,top15=target.nums.filter((n,i)=>ranks[i]<=15),reasons=[];
+  if(excludedWins.length)reasons.push(`당첨번호 중 제외수 ${excludedWins.join(" · ")} 포함`);else reasons.push("당첨번호가 제외수에 막힌 경우 없음");
+  if(fixedWins.length)reasons.push(`고정수 적중 ${fixedWins.join(" · ")}`);if(missedWins.length)reasons.push(`10세트 전체에서 미포함 ${missedWins.join(" · ")}`);
+  reasons.push(`추천 전 가중치 기준 당첨번호 평균 순위 ${avgRank.toFixed(1)}위 · 상위 15위 ${top15.length}개`);
+  return {excludedWins,fixedWins,coveredWins,missedWins,best,avg,avgRank,top15,reasons};
+}
+function savedAnalysisHtml(saved,target){
+  if(!target)return "";const a=analyzeSavedRecommendation(saved,target),feedback=performanceFeedback();
+  const learning=feedback.active?`누적 ${feedback.completed}회 결과를 다음 추천 가중치에 ±${Math.round(PERFORMANCE_MAX_ADJUST*100)}% 범위로 보정 중`:`누적 ${feedback.completed}회 · ${PERFORMANCE_MIN_DRAWS}회부터 다음 추천 가중치 보정 시작`;
+  return `<div class="historyAnalysis"><div class="historyAnalysisTitle"><b>추천 성적 분석</b><span>최고 ${a.best}개 · 세트당 평균 ${a.avg.toFixed(1)}개</span></div>${a.reasons.map(x=>`<div class="analysisLine">${x}</div>`).join("")}<div class="analysisLearning">${learning}</div></div>`;
+}
 function savedHistoryCard(saved){
   const target=sourceRows.find(r=>r.draw===saved.targetDraw);
   const win=target?new Set(target.nums):null, settings=saved.settings||{};
@@ -678,7 +710,7 @@ function savedHistoryCard(saved){
       <div class="historyNumbers"><b>고정수</b> ${settings.fixed?.length?settings.fixed.join(" · "):"없음"}</div>
       <div class="historyNumbers"><b>제외수</b> ${settings.excluded?.length?settings.excluded.join(" · "):"없음"}</div>
       ${target?`<div class="savedWinning">당첨번호 ${target.nums.join(" · ")} + ${target.bonus}</div>`:""}
-      <div class="savedSetList">
+      ${target?savedAnalysisHtml(saved,target):""}\n      <div class="savedSetList">
         ${saved.sets.map((set,i)=>{
           const hit=win?set.filter(n=>win.has(n)):[];
           const bonus=target&&set.includes(target.bonus)&&!win.has(target.bonus);
