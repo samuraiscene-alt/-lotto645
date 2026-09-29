@@ -402,8 +402,9 @@ function normalizedScore(count){
   return count.map((v,i)=>i===0?0:v/max);
 }
 
+function historySource(saved){return saved?.source==="gpt"?"gpt":"app";}
 function completedRecommendationHistory(){
-  return getHistory().filter(h=>h?.sets?.length&&sourceRows.some(r=>r.draw===h.targetDraw));
+  return getHistory().filter(h=>historySource(h)==="app"&&h?.sets?.length&&sourceRows.some(r=>r.draw===h.targetDraw));
 }
 function performanceFeedback(){
   const completed=completedRecommendationHistory(), multiplier=Array(46).fill(1);
@@ -660,7 +661,7 @@ function migrateLegacySaved(){
   const old=getSaved();
   if(!old?.sets?.length) return;
   const history=getHistory();
-  if(!history.some(x=>x.targetDraw===old.targetDraw)){
+  if(!history.some(x=>x.targetDraw===old.targetDraw&&historySource(x)==="app")){
     history.push({...old,settings:old.settings||null});
     history.sort((a,b)=>(a.targetDraw||0)-(b.targetDraw||0));
     saveHistory(history);
@@ -674,16 +675,53 @@ function saveGenerated(){
     savedAt:new Date().toISOString(),
     baseDraw,
     targetDraw:baseDraw?baseDraw+1:null,
+    source:"app",
     sets:generated.map(s=>[...s]),
     settings:recommendationSnapshot()
   };
   localStorage.setItem(STORAGE_KEY,JSON.stringify(payload));
   const history=getHistory();
-  const idx=history.findIndex(x=>x.targetDraw===payload.targetDraw);
+  const idx=history.findIndex(x=>x.targetDraw===payload.targetDraw&&historySource(x)==="app");
   if(idx>=0) history[idx]=payload; else history.push(payload);
   history.sort((a,b)=>(a.targetDraw||0)-(b.targetDraw||0));
   saveHistory(history);
   $("saveInfo").textContent=`✓ ${payload.targetDraw||"다음"}회 추천번호 저장 완료 · 누적 ${history.length}회`;
+  autoCheckSaved();
+  $("savedInlineBody").hidden=false;
+  $("savedInlineToggle").classList.add("open");
+}
+
+function parseManualSets(text){
+  const lines=text.split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
+  if(!lines.length||lines.length>10)throw new Error("번호를 1~10줄로 입력하세요.");
+  const sets=[],seen=new Set();
+  lines.forEach((line,i)=>{
+    const cleaned=line.replace(/^\s*(?:\d+\s*세트\s*[:：.]?|\d+\s*[.)])\s*/,"");
+    const tokens=cleaned.split(/[\s,·，]+/).filter(Boolean);
+    if(tokens.length!==6||tokens.some(x=>! /^\d+$/.test(x)))throw new Error((i+1)+"번째 줄에 1~45 번호 6개를 입력하세요.");
+    const nums=tokens.map(Number).sort((a,b)=>a-b);
+    if(nums.some(n=>n<1||n>45)||new Set(nums).size!==6)throw new Error((i+1)+"번째 줄에 범위 밖 번호나 중복 번호가 있습니다.");
+    const key=nums.join(",");
+    if(seen.has(key))throw new Error((i+1)+"번째 줄은 앞의 세트와 동일합니다.");
+    seen.add(key);sets.push(nums);
+  });
+  return sets;
+}
+function saveManualSets(){
+  const info=$("manualSaveInfo");
+  if(!latestDrawData){info.textContent="최신 회차 데이터를 확인한 뒤 저장하세요.";return;}
+  let sets;
+  try{sets=parseManualSets($("manualSets").value);}
+  catch(err){info.textContent=err.message;return;}
+  const targetDraw=latestDrawData.draw+1,history=getHistory();
+  const idx=history.findIndex(x=>x.targetDraw===targetDraw&&historySource(x)==="gpt");
+  if(idx>=0&&!confirm(targetDraw+"회 GPT 기록을 새 입력 번호로 교체할까요?"))return;
+  const payload={savedAt:new Date().toISOString(),baseDraw:latestDrawData.draw,targetDraw,source:"gpt",sets,settings:{strategy:"gpt",period:null,rareMode:false,fixed:[],excluded:[],setCount:sets.length,rarity:[]}};
+  if(idx>=0)history[idx]=payload;else history.push(payload);
+  history.sort((a,b)=>(a.targetDraw||0)-(b.targetDraw||0));
+  try{saveHistory(history);}
+  catch{info.textContent="기기 저장 공간을 확인하세요. 번호가 저장되지 않았습니다.";return;}
+  info.textContent="✓ "+targetDraw+"회 GPT 번호 "+sets.length+"세트 저장 완료";
   autoCheckSaved();
   $("savedInlineBody").hidden=false;
   $("savedInlineToggle").classList.add("open");
@@ -700,7 +738,7 @@ function prizeLabelForSaved(set,target){
 }
 
 function historyStrategyLabel(v){
-  return ({balanced:"종합형",recent:"최근형",long:"장기형"})[v]||"기록 없음";
+  return ({balanced:"종합형",recent:"최근형",long:"장기형",gpt:"GPT 직접 입력"})[v]||"기록 없음";
 }
 function historyPeriodLabel(v){
   return ({"52":"최근 1년","26":"최근 6개월","13":"최근 3개월","10":"최근 10회","20":"최근 20회","30":"최근 30회","all":"전체"})[v]||"기록 없음";
@@ -713,26 +751,23 @@ function analyzeSavedRecommendation(saved,target){
   const ranked=Array.from({length:45},(_,i)=>i+1).sort((a,b)=>priorWeights[b]-priorWeights[a]||a-b),ranks=target.nums.map(n=>ranked.indexOf(n)+1),avgRank=ranks.reduce((a,b)=>a+b,0)/ranks.length,top15=target.nums.filter((n,i)=>ranks[i]<=15),reasons=[];
   if(excludedWins.length)reasons.push(`당첨번호 중 제외수 ${excludedWins.join(" · ")} 포함`);else reasons.push("당첨번호가 제외수에 막힌 경우 없음");
   if(fixedWins.length)reasons.push(`고정수 적중 ${fixedWins.join(" · ")}`);if(missedWins.length)reasons.push(`10세트 전체에서 미포함 ${missedWins.join(" · ")}`);
-  reasons.push(`추천 전 가중치 기준 당첨번호 평균 순위 ${avgRank.toFixed(1)}위 · 상위 15위 ${top15.length}개`);
+  if(historySource(saved)==="app")reasons.push(`추천 전 가중치 기준 당첨번호 평균 순위 ${avgRank.toFixed(1)}위 · 상위 15위 ${top15.length}개`);
   return {excludedWins,fixedWins,coveredWins,missedWins,best,avg,avgRank,top15,reasons};
 }
 function savedAnalysisHtml(saved,target){
   if(!target)return "";const a=analyzeSavedRecommendation(saved,target),feedback=performanceFeedback();
-  const learning=feedback.active?`누적 ${feedback.completed}회 결과를 다음 추천 가중치에 ±${Math.round(PERFORMANCE_MAX_ADJUST*100)}% 범위로 보정 중`:`누적 ${feedback.completed}회 · ${PERFORMANCE_MIN_DRAWS}회부터 다음 추천 가중치 보정 시작`;
+  const learning=historySource(saved)==="gpt"?"GPT 직접 입력 기록 · 앱 추천 가중치 보정에 사용하지 않음":feedback.active?`누적 ${feedback.completed}회 결과를 다음 추천 가중치에 ±${Math.round(PERFORMANCE_MAX_ADJUST*100)}% 범위로 보정 중`:`누적 ${feedback.completed}회 · ${PERFORMANCE_MIN_DRAWS}회부터 다음 추천 가중치 보정 시작`;
   return `<div class="historyAnalysis"><div class="historyAnalysisTitle"><b>추천 성적 분석</b><span>최고 ${a.best}개 · 세트당 평균 ${a.avg.toFixed(1)}개</span></div>${a.reasons.map(x=>`<div class="analysisLine">${x}</div>`).join("")}<div class="analysisLearning">${learning}</div></div>`;
 }
 function savedHistoryCard(saved){
   const target=sourceRows.find(r=>r.draw===saved.targetDraw);
   const win=target?new Set(target.nums):null, settings=saved.settings||{};
   const dateText=saved.savedAt?new Date(saved.savedAt).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):"";
-  return `<div class="historySwipe" data-draw="${saved.targetDraw}"><button type="button" class="historyDelete" aria-label="${saved.targetDraw}회 기록 삭제">삭제</button><details class="historyDraw">
-    <summary><span><b>${saved.targetDraw||"다음"}회</b><small>${target?"대조 완료":"추첨 전"}</small></span><strong>추천 ${saved.sets.length}세트</strong></summary>
+  return `<div class="historySwipe" data-draw="${saved.targetDraw}" data-source="${historySource(saved)}"><button type="button" class="historyDelete" aria-label="${saved.targetDraw}회 기록 삭제">삭제</button><details class="historyDraw">
+    <summary><span><b>${saved.targetDraw||"다음"}회</b><small>${historySource(saved)==="gpt"?"GPT 직접 입력":"앱 생성"} · ${target?"대조 완료":"추첨 전"}</small></span><strong>추천 ${saved.sets.length}세트</strong></summary>
     <div class="historyDrawBody">
       <div class="historySettings">
-        <span>전략 <b>${historyStrategyLabel(settings.strategy)}</b></span>
-        <span>기간 <b>${historyPeriodLabel(settings.period)}</b></span>
-        <span>희소성 <b>${settings.rareMode?"ON":"OFF"}</b></span>
-        <span>저장 <b>${dateText}</b></span>
+        ${historySource(saved)==="gpt"?`<span>출처 <b>GPT 직접 입력</b></span><span>저장 <b>${dateText}</b></span>`:`<span>전략 <b>${historyStrategyLabel(settings.strategy)}</b></span><span>기간 <b>${historyPeriodLabel(settings.period)}</b></span><span>희소성 <b>${settings.rareMode?"ON":"OFF"}</b></span><span>저장 <b>${dateText}</b></span>`}
       </div>
       <div class="historyNumbers"><b>고정수</b> ${settings.fixed?.length?settings.fixed.join(" · "):"없음"}</div>
       <div class="historyNumbers"><b>제외수</b> ${settings.excluded?.length?settings.excluded.join(" · "):"없음"}</div>
@@ -758,11 +793,11 @@ function buildGptAnalysisText(){
   lines.push(latest?`최신 당첨: ${latest.draw}회 / ${latest.nums.join(" · ")} + 보너스 ${latest.bonus}`:"최신 당첨: 없음");
   lines.push(`현재 전략: ${historyStrategyLabel(recommendationStrategy)} / 분석기간 ${historyPeriodLabel($("period")?.value)} / 희소성 ${rareMode?"ON":"OFF"}`);
   lines.push(`현재 가중치 상위 15개: ${ranked.slice(0,15).join(" · ")}`);
-  lines.push(`저장 기록: ${history.length}회 / 결과 대조 완료 ${history.filter(h=>sourceRows.some(r=>r.draw===h.targetDraw)).length}회`,"");
+  lines.push(`저장 기록: ${history.length}건 / 결과 대조 완료 ${history.filter(h=>sourceRows.some(r=>r.draw===h.targetDraw)).length}건`,"");
   history.forEach(saved=>{
     const target=sourceRows.find(r=>r.draw===saved.targetDraw),st=saved.settings||{};
-    lines.push(`--- ${saved.targetDraw||"다음"}회 ---`);
-    lines.push(`추천 당시: 전략 ${historyStrategyLabel(st.strategy)} / 기간 ${historyPeriodLabel(st.period)} / 희소성 ${st.rareMode?"ON":"OFF"}`);
+    lines.push(`--- ${saved.targetDraw||"다음"}회 · ${historySource(saved)==="gpt"?"GPT 직접 입력":"앱 생성"} ---`);
+    lines.push(historySource(saved)==="gpt"?"추천 당시: GPT 직접 입력 / 앱 가중치·분석기간 미적용":`추천 당시: 전략 ${historyStrategyLabel(st.strategy)} / 기간 ${historyPeriodLabel(st.period)} / 희소성 ${st.rareMode?"ON":"OFF"}`);
     lines.push(`고정수: ${st.fixed?.length?st.fixed.join(" · "):"없음"}`);
     lines.push(`제외수: ${st.excluded?.length?st.excluded.join(" · "):"없음"}`);
     (saved.sets||[]).forEach((set,i)=>lines.push(`${i+1}세트: ${set.join(" · ")}${st.rarity?.[i]!=null?` / 희소성 ${st.rarity[i]}%`:""}`));
@@ -776,7 +811,7 @@ function buildGptAnalysisText(){
   });
   const archiveRecords=history.map(saved=>{
     const target=sourceRows.find(r=>r.draw===saved.targetDraw),st=saved.settings||{};
-    const record={targetDraw:saved.targetDraw||null,baseDraw:saved.baseDraw||null,savedAt:saved.savedAt||null,settings:{strategy:st.strategy||null,period:st.period||null,rareMode:!!st.rareMode,fixed:[...(st.fixed||[])],excluded:[...(st.excluded||[])],setCount:(saved.sets||[]).length},sets:(saved.sets||[]).map((set,i)=>({numbers:[...set],rarity:st.rarity?.[i]??null}))};
+    const record={targetDraw:saved.targetDraw||null,baseDraw:saved.baseDraw||null,savedAt:saved.savedAt||null,source:historySource(saved),settings:{strategy:st.strategy||null,period:st.period||null,rareMode:!!st.rareMode,fixed:[...(st.fixed||[])],excluded:[...(st.excluded||[])],setCount:(saved.sets||[]).length},sets:(saved.sets||[]).map((set,i)=>({numbers:[...set],rarity:st.rarity?.[i]??null}))};
     if(target){
       const an=analyzeSavedRecommendation(saved,target);
       const winningSet=new Set(target.nums),allUsed=new Set((saved.sets||[]).flat());
@@ -810,23 +845,23 @@ function autoCheckSaved(){
   box.hidden=false;
   const completed=history.filter(h=>sourceRows.some(r=>r.draw===h.targetDraw)).length;
   body.innerHTML=`
-    <div class="historyOverview"><b>회차별 저장 기록</b><span>누적 ${history.length}회 · 결과 대조 완료 ${completed}회</span></div>
+    <div class="historyOverview"><b>회차별 저장 기록</b><span>누적 ${history.length}건 · 결과 대조 완료 ${completed}건</span></div>
     <div class="historyList">${history.map(savedHistoryCard).join("")}</div>`;
   bindHistorySwipe();
 }
 
-function deleteHistoryDraw(draw){
-  if(draw===1243) localStorage.setItem(RECOVERY_1243_KEY,"deleted");
-  let history=getHistory().filter(h=>h.targetDraw!==draw);
+function deleteHistoryDraw(draw,source){
+  if(draw===1243&&source==="app") localStorage.setItem(RECOVERY_1243_KEY,"deleted");
+  let history=getHistory().filter(h=>!(h.targetDraw===draw&&historySource(h)===source));
   saveHistory(history);
   const current=getSaved();
-  if(current?.targetDraw===draw){
+  if(source==="app"&&current?.targetDraw===draw){
     localStorage.removeItem(STORAGE_KEY);
-    const newest=[...history].sort((a,b)=>(b.targetDraw||0)-(a.targetDraw||0))[0];
+    const newest=history.filter(x=>historySource(x)==="app").sort((a,b)=>(b.targetDraw||0)-(a.targetDraw||0))[0];
     if(newest) localStorage.setItem(STORAGE_KEY,JSON.stringify(newest));
   }
   autoCheckSaved();
-  $("saveInfo").textContent=history.length?`✓ ${draw}회 기록 삭제 완료 · 누적 ${history.length}회`:`✓ ${draw}회 기록 삭제 완료`;
+  $("saveInfo").textContent=history.length?`✓ ${draw}회 ${source==="gpt"?"GPT":"앱"} 기록 삭제 완료 · 누적 ${history.length}건`:`✓ ${draw}회 기록 삭제 완료`;
 }
 function bindHistorySwipe(){
   document.querySelectorAll(".historySwipe").forEach(row=>{
@@ -837,7 +872,7 @@ function bindHistorySwipe(){
     header.addEventListener("touchstart",e=>{if(e.touches.length!==1)return;startX=e.touches[0].clientX;startY=e.touches[0].clientY;dx=0;tracking=true;header.style.transition="none";},{passive:true});
     header.addEventListener("touchmove",e=>{if(!tracking)return;const x=e.touches[0].clientX-startX,y=e.touches[0].clientY-startY;if(Math.abs(y)>Math.abs(x)&&Math.abs(y)>8){tracking=false;reset();return;}dx=Math.min(0,Math.max(-88,x));header.style.transform=`translateX(${dx}px)`;},{passive:true});
     header.addEventListener("touchend",()=>{if(!tracking)return;tracking=false;header.style.transition="transform .22s ease";if(dx<-44){header.style.transform="translateX(-78px)";row.classList.add("swiped");}else reset();});
-    del.onclick=()=>{const draw=Number(row.dataset.draw);if(!confirm(`${draw}회 저장 기록을 완전히 삭제할까요?\n삭제하면 누적 통계에서도 제외되며 되돌릴 수 없습니다.`))return;deleteHistoryDraw(draw);};
+    del.onclick=()=>{const draw=Number(row.dataset.draw),source=row.dataset.source;if(!confirm(`${draw}회 ${source==="gpt"?"GPT 직접 입력":"앱 생성"} 기록을 완전히 삭제할까요?\n삭제하면 누적 통계에서도 제외되며 되돌릴 수 없습니다.`))return;deleteHistoryDraw(draw,source);};
   });
 }
 
@@ -919,6 +954,7 @@ $("excludeToggleBtn").onclick = () => {
 
 $("saveBtn").onclick =
   saveGenerated;
+if($("manualSaveBtn"))$("manualSaveBtn").onclick=saveManualSets;
 $("savedInlineToggle").onclick=()=>{
   const body=$("savedInlineBody");
   body.hidden=!body.hidden;
