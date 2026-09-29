@@ -159,6 +159,133 @@
         "winningAverageWeightRank": 16.5,
         "winningTop15Count": 3
       }
+    },
+    {
+      "targetDraw": 1244,
+      "baseDraw": 1243,
+      "savedAt": "2026-09-29T07:05:21.144Z",
+      "source": "gpt",
+      "settings": {
+        "strategy": "gpt",
+        "period": null,
+        "rareMode": false,
+        "fixed": [],
+        "excluded": [],
+        "setCount": 10
+      },
+      "sets": [
+        {
+          "numbers": [
+            1,
+            18,
+            19,
+            22,
+            32,
+            45
+          ],
+          "rarity": null
+        },
+        {
+          "numbers": [
+            5,
+            11,
+            21,
+            30,
+            31,
+            44
+          ],
+          "rarity": null
+        },
+        {
+          "numbers": [
+            2,
+            4,
+            9,
+            15,
+            38,
+            42
+          ],
+          "rarity": null
+        },
+        {
+          "numbers": [
+            7,
+            8,
+            13,
+            16,
+            28,
+            40
+          ],
+          "rarity": null
+        },
+        {
+          "numbers": [
+            6,
+            20,
+            24,
+            27,
+            34,
+            43
+          ],
+          "rarity": null
+        },
+        {
+          "numbers": [
+            7,
+            14,
+            25,
+            26,
+            31,
+            38
+          ],
+          "rarity": null
+        },
+        {
+          "numbers": [
+            16,
+            32,
+            36,
+            37,
+            41,
+            43
+          ],
+          "rarity": null
+        },
+        {
+          "numbers": [
+            13,
+            15,
+            20,
+            23,
+            33,
+            35
+          ],
+          "rarity": null
+        },
+        {
+          "numbers": [
+            2,
+            3,
+            17,
+            18,
+            29,
+            44
+          ],
+          "rarity": null
+        },
+        {
+          "numbers": [
+            10,
+            11,
+            12,
+            19,
+            24,
+            39
+          ],
+          "rarity": null
+        }
+      ],
+      "result": null
     }
   ]
 }
