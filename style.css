@@ -73,3 +73,6 @@
 /* GPT analysis export */
 .gptCopyBtn{width:100%;margin-top:9px;padding:12px 14px;border:1px solid rgba(10,132,255,.18);border-radius:12px;background:#eef6ff;color:#0a84ff;font-size:14px;font-weight:800;cursor:pointer}
 .gptCopyBtn:active{transform:scale(.99);background:#e3f0ff}
+
+/* GPT manual recommendation entry */
+.manualEntry{margin-top:12px;border:1px solid rgba(15,23,42,.08);border-radius:14px;background:#f7f8fa;overflow:hidden}.manualEntry>summary{padding:13px 14px;font-size:14px;font-weight:800;cursor:pointer;list-style:none}.manualEntry>summary::-webkit-details-marker{display:none}.manualEntry>summary:after{content:"›";float:right;color:#8e8e93;transform:rotate(90deg)}.manualEntry[open]>summary:after{transform:rotate(-90deg)}.manualEntryBody{padding:0 12px 12px}.manualEntryBody textarea{min-height:160px;margin:9px 0;font-size:15px;background:#fff}.manualEntryBody button{width:100%}.manualEntryBody #manualSaveInfo{margin-top:8px;line-height:1.4}
