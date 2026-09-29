@@ -774,7 +774,19 @@ function buildGptAnalysisText(){
     }else lines.push("결과: 아직 추첨 전");
     lines.push("");
   });
-  lines.push("GPT에게 요청: 위 기록에서 추천 알고리즘이 당첨번호를 놓친 원인을 구분해서 설명하고, 다음 회차에서 고정수·제외수·기간별 가중치·세트 간 번호 분산을 어떻게 조정할지 제안해줘. 실제 당첨확률이 높아진다고 단정하지 말고 추천 방식의 개선과 한계를 함께 설명해줘.");
+  const archiveRecords=history.map(saved=>{
+    const target=sourceRows.find(r=>r.draw===saved.targetDraw),st=saved.settings||{};
+    const record={targetDraw:saved.targetDraw||null,baseDraw:saved.baseDraw||null,savedAt:saved.savedAt||null,settings:{strategy:st.strategy||null,period:st.period||null,rareMode:!!st.rareMode,fixed:[...(st.fixed||[])],excluded:[...(st.excluded||[])],setCount:(saved.sets||[]).length},sets:(saved.sets||[]).map((set,i)=>({numbers:[...set],rarity:st.rarity?.[i]??null}))};
+    if(target){
+      const an=analyzeSavedRecommendation(saved,target);
+      const winningSet=new Set(target.nums),allUsed=new Set((saved.sets||[]).flat());
+      record.result={winning:[...target.nums],bonus:target.bonus,bestHits:an.best,averageHits:Number(an.avg.toFixed(1)),excludedWinning:(st.excluded||[]).filter(n=>winningSet.has(n)),missingWinning:target.nums.filter(n=>!allUsed.has(n))};
+    }else record.result=null;
+    return record;
+  });
+  lines.push("GPT에게 요청: 위 기록에서 추천 알고리즘이 당첨번호를 놓친 원인을 구분해서 설명하고, 다음 회차에서 고정수·제외수·기간별 가중치·세트 간 번호 분산을 어떻게 조정할지 제안해줘. 실제 당첨확률이 높아진다고 단정하지 말고 추천 방식의 개선과 한계를 함께 설명해줘.","","[GITHUB_ARCHIVE_JSON]");
+  lines.push(JSON.stringify({schemaVersion:1,records:archiveRecords},null,2));
+  lines.push("[/GITHUB_ARCHIVE_JSON]");
   return lines.join("\n");
 }
 async function copyGptAnalysis(){
