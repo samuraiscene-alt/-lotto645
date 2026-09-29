@@ -68,3 +68,8 @@
 .historyAnalysis{margin:8px 0 10px;padding:11px;border-radius:12px;background:#f5f8ff;border:1px solid rgba(10,132,255,.10)}
 .historyAnalysisTitle{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:7px}.historyAnalysisTitle b{font-size:16px}.historyAnalysisTitle span{font-size:14px;color:#0a84ff;font-weight:800;text-align:right}
 .analysisLine{font-size:14px;color:#4b5563;line-height:1.6;padding:3px 0}.analysisLearning{margin-top:9px;padding-top:9px;border-top:1px solid rgba(15,23,42,.07);font-size:14px;color:#248a3d;font-weight:800;line-height:1.5}
+
+
+/* GPT analysis export */
+.gptCopyBtn{width:100%;margin-top:9px;padding:12px 14px;border:1px solid rgba(10,132,255,.18);border-radius:12px;background:#eef6ff;color:#0a84ff;font-size:14px;font-weight:800;cursor:pointer}
+.gptCopyBtn:active{transform:scale(.99);background:#e3f0ff}
