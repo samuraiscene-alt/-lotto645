@@ -749,6 +749,45 @@ function savedHistoryCard(saved){
     </div>
   </details></div>`;
 }
+function buildGptAnalysisText(){
+  const history=getHistory().sort((a,b)=>(a.targetDraw||0)-(b.targetDraw||0));
+  const latest=sourceRows.slice().sort((a,b)=>b.draw-a.draw)[0]||latestDrawData;
+  const weights=recommendationWeights();
+  const ranked=Array.from({length:45},(_,i)=>i+1).sort((x,y)=>weights[y]-weights[x]||x-y);
+  const lines=["[LOTTO 6/45 GPT 분석자료]","목적: 저장한 추천/구매 번호와 실제 당첨 결과를 비교해 추천 방식의 문제점을 분석하고 다음 회차 전략을 검토한다.","주의: 과거 통계는 다음 추첨의 개별 번호 확률을 높이지 않으며, 아래 자료는 추천 알고리즘 평가용이다.",""];
+  lines.push(latest?`최신 당첨: ${latest.draw}회 / ${latest.nums.join(" · ")} + 보너스 ${latest.bonus}`:"최신 당첨: 없음");
+  lines.push(`현재 전략: ${historyStrategyLabel(recommendationStrategy)} / 분석기간 ${historyPeriodLabel($("period")?.value)} / 희소성 ${rareMode?"ON":"OFF"}`);
+  lines.push(`현재 가중치 상위 15개: ${ranked.slice(0,15).join(" · ")}`);
+  lines.push(`저장 기록: ${history.length}회 / 결과 대조 완료 ${history.filter(h=>sourceRows.some(r=>r.draw===h.targetDraw)).length}회`,"");
+  history.forEach(saved=>{
+    const target=sourceRows.find(r=>r.draw===saved.targetDraw),st=saved.settings||{};
+    lines.push(`--- ${saved.targetDraw||"다음"}회 ---`);
+    lines.push(`추천 당시: 전략 ${historyStrategyLabel(st.strategy)} / 기간 ${historyPeriodLabel(st.period)} / 희소성 ${st.rareMode?"ON":"OFF"}`);
+    lines.push(`고정수: ${st.fixed?.length?st.fixed.join(" · "):"없음"}`);
+    lines.push(`제외수: ${st.excluded?.length?st.excluded.join(" · "):"없음"}`);
+    (saved.sets||[]).forEach((set,i)=>lines.push(`${i+1}세트: ${set.join(" · ")}${st.rarity?.[i]!=null?` / 희소성 ${st.rarity[i]}%`:""}`));
+    if(target){
+      const an=analyzeSavedRecommendation(saved,target);
+      lines.push(`실제 당첨: ${target.nums.join(" · ")} + 보너스 ${target.bonus}`);
+      lines.push(`결과: 최고 ${an.best}개 일치 / 세트당 평균 ${an.avg.toFixed(1)}개`);
+      an.reasons.forEach(x=>lines.push(`분석: ${x}`));
+    }else lines.push("결과: 아직 추첨 전");
+    lines.push("");
+  });
+  lines.push("GPT에게 요청: 위 기록에서 추천 알고리즘이 당첨번호를 놓친 원인을 구분해서 설명하고, 다음 회차에서 고정수·제외수·기간별 가중치·세트 간 번호 분산을 어떻게 조정할지 제안해줘. 실제 당첨확률이 높아진다고 단정하지 말고 추천 방식의 개선과 한계를 함께 설명해줘.");
+  return lines.join("\n");
+}
+async function copyGptAnalysis(){
+  const text=buildGptAnalysisText(),btn=$("gptCopyBtn");
+  try{
+    await navigator.clipboard.writeText(text);
+    if(btn){const old=btn.textContent;btn.textContent="✓ 복사 완료";setTimeout(()=>btn.textContent=old,1800);}
+  }catch{
+    const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();
+    if(btn){const old=btn.textContent;btn.textContent="✓ 복사 완료";setTimeout(()=>btn.textContent=old,1800);}
+  }
+}
+
 function autoCheckSaved(){
   recoverKnownHistory();
   migrateLegacySaved();
@@ -845,6 +884,8 @@ function check(){
           먼저 추천 조합을 생성하세요.
         </div>`;
 }
+
+$("gptCopyBtn").onclick=copyGptAnalysis;
 
 $("analyzeBtn").onclick =
   analyze;
