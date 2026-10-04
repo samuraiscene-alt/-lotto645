@@ -285,7 +285,21 @@
           "rarity": null
         }
       ],
-      "result": null
+      "result": {
+        "winning": [
+          1,
+          13,
+          18,
+          26,
+          34,
+          38
+        ],
+        "bonus": 25,
+        "bestHits": 2,
+        "averageHits": 0.9,
+        "excludedWinning": [],
+        "missingWinning": []
+      }
     }
   ]
 }
