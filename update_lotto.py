@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from datetime import datetime
+import time
 import requests
 
 DATA_FILE = Path("lotto_data.json")
@@ -16,6 +17,59 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 Lotto645Updater/2.0",
 }
 
+def request_json(url, *, params=None, headers=None, timeout=20, label="데이터 요청", attempts=3, validator=None):
+    """Request JSON with bounded retries for transient network or response-format failures."""
+    last_error = None
+    for attempt in range(1, attempts + 1):
+        try:
+            response = requests.get(url, params=params, headers=headers, timeout=timeout)
+            response.raise_for_status()
+            try:
+                data = response.json()
+            except ValueError as exc:
+                content_type = response.headers.get("Content-Type", "알 수 없음")
+                raise ValueError(
+                    f"JSON이 아닌 응답을 받았습니다 (HTTP {response.status_code}, Content-Type: {content_type})"
+                ) from exc
+            if validator is not None:
+                validator(data)
+            return data
+        except (requests.RequestException, ValueError) as exc:
+            last_error = exc
+            if attempt < attempts:
+                delay = 2 ** attempt
+                print(f"{label} 실패 ({attempt}/{attempts}): {exc} / {delay}초 후 재시도")
+                time.sleep(delay)
+    raise RuntimeError(f"{label}이(가) {attempts}회 모두 실패했습니다: {last_error}") from last_error
+
+
+def validate_main_payload(data):
+    try:
+        items = data["data"]["result"]["pstLtEpstInfo"]["lt645"]
+        if not isinstance(items, list) or not items:
+            raise ValueError("최신 회차 목록이 비어 있습니다.")
+        max(int(item["ltEpsd"]) for item in items)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError(f"최신 회차 응답 구조가 올바르지 않습니다: {exc}") from exc
+
+
+def validate_detail_payload(data, draw):
+    try:
+        items = data.get("data", {}).get("list", [])
+        if not isinstance(items, list):
+            raise ValueError("상세 결과 목록 형식이 올바르지 않습니다.")
+        found = any(int(item.get("ltEpsd", 0)) == draw for item in items)
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise ValueError(f"{draw}회 상세 응답 구조가 올바르지 않습니다: {exc}") from exc
+    if not found:
+        raise ValueError(f"{draw}회 데이터를 상세 응답에서 찾지 못했습니다.")
+
+
+def validate_history_payload(data):
+    if not isinstance(data, list) or not data:
+        raise ValueError("희소성 학습 이력 응답이 비어 있거나 목록 형식이 아닙니다.")
+
+
 def parse_date(ymd):
     s = str(ymd or "")
     try:
@@ -24,21 +78,23 @@ def parse_date(ymd):
         return s
 
 def latest_round():
-    r = requests.get(MAIN_URL, headers=HEADERS, timeout=20)
-    r.raise_for_status()
-    data = r.json()
+    data = request_json(
+        MAIN_URL, headers=HEADERS, timeout=20,
+        label="최신 회차 조회", validator=validate_main_payload
+    )
     items = data["data"]["result"]["pstLtEpstInfo"]["lt645"]
     return max(int(x["ltEpsd"]) for x in items)
 
 def fetch_draw(draw):
-    r = requests.get(
+    data = request_json(
         DETAIL_URL,
         params={"srchDir":"center","srchLtEpsd":draw},
         headers=HEADERS,
-        timeout=20
+        timeout=20,
+        label=f"{draw}회 상세 조회",
+        validator=lambda payload: validate_detail_payload(payload, draw)
     )
-    r.raise_for_status()
-    items = r.json().get("data",{}).get("list",[])
+    items = data.get("data",{}).get("list",[])
     item = next((x for x in items if int(x["ltEpsd"]) == draw), None)
     if not item:
         raise RuntimeError(f"{draw}회 데이터를 찾지 못했습니다.")
@@ -71,9 +127,10 @@ def features(nums):
     return [1.0,float(sum(nums)),float(min(gaps)),float(max(gaps)),float(sum(n<=31 for n in nums))]
 
 def train_rarity_model(latest):
-    r=requests.get(HISTORY_URL,timeout=30)
-    r.raise_for_status()
-    data=r.json()
+    data=request_json(
+        HISTORY_URL, timeout=30, label="희소성 학습 이력 조회",
+        validator=validate_history_payload
+    )
     samples=[]
     for row in data:
         draw=int(row.get("draw_no",0) or 0)
