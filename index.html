@@ -7,7 +7,7 @@
 <title>로또 6/45 분석기</title>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="style.css?v=20261021-copy-cleanup-1">
+<link rel="stylesheet" href="style.css?v=20261021-rarity-accordion-1">
 </head>
 <body>
 <div class="wrap">
@@ -81,7 +81,7 @@
 
 
 
-<section class="panel rarityPanel"><div class="sectionHead"><div><h2>내 번호 희소성 분석</h2></div></div><div id="rarityGrid" class="rarityGrid"></div><div id="rarityResult" class="rarityResult empty">번호 6개를 선택하세요.</div></section>
+<section class="panel rarityPanel"><div id="rarityAccordion" class="savedInline"><button type="button" id="rarityToggle" class="savedInlineToggle" aria-expanded="false" aria-controls="rarityBody"><span>내 번호 희소성 분석</span><b>⌄</b></button><div id="rarityBody" class="savedInlineBody" hidden><div id="rarityGrid" class="rarityGrid"></div><div id="rarityResult" class="rarityResult empty">번호 6개를 선택하세요.</div></div></div></section>
 
 <section class="panel backtestPanel">
   <div class="sectionHead"><div><h2>추천 전략 백테스트</h2></div></div>
@@ -111,6 +111,6 @@
   </div>
 </div>
 </div>
-<script src="app.js?v=20261021-copy-cleanup-1"></script>
+<script src="app.js?v=20261021-rarity-accordion-1"></script>
 </body>
 </html>
