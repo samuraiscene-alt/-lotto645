@@ -7,7 +7,7 @@
 <title>로또 6/45 분석기</title>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="style.css?v=20261021-rarity-accordion-1">
+<link rel="stylesheet" href="style.css?v=20261021-reduction-save-1">
 </head>
 <body>
 <div class="wrap">
@@ -64,9 +64,13 @@
       <div id="reductionSelection" class="reductionSelection">후보 번호를 선택하세요. 0/6</div>
       <div class="reductionActions">
         <button type="button" class="secondary" id="reductionClearBtn">선택 초기화</button>
+        <button type="button" class="secondary" id="reductionSaveAllBtn" disabled>후보군 전체 저장</button>
         <button type="button" class="secondary" id="reductionHalfBtn">내 선택 + 자동 완성</button>
         <button type="button" class="primary" id="reductionAutoBtn">후보군에서 자동 6개</button>
       </div>
+      <button type="button" class="primary reductionPickSaveBtn" id="reductionPickSaveBtn" disabled>현재 6개 조합 저장</button>
+      <div id="reductionSaved" class="reductionSaved" hidden><div id="reductionSavedTitle" class="reductionSavedTitle"></div><div id="reductionSavedList" class="reductionSavedList"></div></div>
+      <p id="reductionSaveInfo" class="hint reductionSaveInfo" role="status" aria-live="polite"></p>
       <button type="button" class="gptCopyBtn" id="reductionCopyBtn">번호 추리기 자료 복사</button>
     </div>
   </div>
@@ -111,6 +115,6 @@
   </div>
 </div>
 </div>
-<script src="app.js?v=20261021-rarity-accordion-1"></script>
+<script src="app.js?v=20261021-reduction-save-1"></script>
 </body>
 </html>
