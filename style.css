@@ -114,3 +114,6 @@
   .reductionGradeNumbers .reductionNum b{font-size:13px}
   .reductionGradeNumbers .reductionNum small{font-size:7px}
 }
+
+/* Compact headings after removing helper copy. */
+.sectionHead h2,.rankHead h2,.recommendPanel>.row h2{margin-bottom:0}
