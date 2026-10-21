@@ -383,6 +383,7 @@ function weightedPick(pool,weights,k){
 
 
 const REDUCTION_TOP_SHARE = 0.099;
+const REDUCTION_HISTORY_KEY = "lotto645_number_reduction_history_v1";
 const REDUCTION_BOTTOM_SHARE = 0.218;
 let reductionState = null;
 let reductionSelected = [];
@@ -449,6 +450,71 @@ function buildReductionState(){
     protectedTies,topTarget,bottomTarget,topShare:REDUCTION_TOP_SHARE,bottomShare:REDUCTION_BOTTOM_SHARE
   };
 }
+function getReductionHistory(){
+  try{
+    const value=JSON.parse(localStorage.getItem(REDUCTION_HISTORY_KEY)||'{"schemaVersion":1,"records":[]}');
+    return {schemaVersion:1,records:Array.isArray(value.records)?value.records:[]};
+  }catch{return {schemaVersion:1,records:[]};}
+}
+function saveReductionHistory(history){localStorage.setItem(REDUCTION_HISTORY_KEY,JSON.stringify(history));}
+function reductionRecordTemplate(state){
+  const ranking=state.ranked.map(n=>({number:n,grade:state.gradeByNumber[n],rank:state.rankByNumber[n],appearances:{year:state.counts.year[n],halfYear:state.counts.half[n],threeMonths:state.counts.quarter[n]},status:state.candidates.includes(n)?"candidate":state.topExcluded.includes(n)?"excluded_top":state.bottomExcluded.includes(n)?"excluded_bottom":"tie_boundary_retained"}));
+  return {schemaVersion:1,targetDraw:state.baseDraw?state.baseDraw+1:null,baseDraw:state.baseDraw,savedAt:new Date().toISOString(),candidateSavedAt:null,windows:{year:state.windows.year,halfYear:state.windows.half,threeMonths:state.windows.quarter},cutoff:{topShare:state.topShare,bottomShare:state.bottomShare,topTarget:state.topTarget,bottomTarget:state.bottomTarget},candidateNumbers:[...state.candidates],excluded:{top:[...state.topExcluded],bottom:[...state.bottomExcluded],tieBoundaryRetained:[...state.protectedTies]},ranking,sets:[]};
+}
+function renderReductionSaved(){
+  const allButton=$("reductionSaveAllBtn"),pickButton=$("reductionPickSaveBtn"),box=$("reductionSaved"),title=$("reductionSavedTitle"),list=$("reductionSavedList");
+  if(!allButton||!pickButton||!box||!title||!list)return;
+  if(!reductionState){allButton.disabled=true;pickButton.disabled=true;box.hidden=true;return;}
+  const targetDraw=reductionState.baseDraw?reductionState.baseDraw+1:null,history=getReductionHistory();
+  const record=history.records.find(item=>item.targetDraw===targetDraw),sets=record?.sets||[];
+  allButton.textContent=record?.candidateSavedAt?"후보군 전체 저장 완료":"후보군 전체 저장";
+  allButton.disabled=!!record?.candidateSavedAt;
+  pickButton.disabled=reductionSelected.length!==6;
+  box.hidden=!sets.length;
+  title.textContent=`${targetDraw||"다음"}회 저장 조합 · ${sets.length}개`;
+  list.innerHTML=sets.map((item,index)=>`<div class="reductionSavedRow"><b>${index+1}.</b><span>${item.numbers.join(" · ")}</span><button type="button" class="reductionDeleteBtn" data-index="${index}" aria-label="저장 번호 ${index+1} 삭제">삭제</button></div>`).join("");
+  list.querySelectorAll(".reductionDeleteBtn").forEach(del=>del.onclick=()=>{
+    const latest=getReductionHistory(),active=latest.records.find(item=>item.targetDraw===targetDraw);
+    if(!active)return;
+    active.sets.splice(Number(del.dataset.index),1);
+    saveReductionHistory(latest);
+    $("reductionSaveInfo").textContent=`${targetDraw}회 저장 조합을 삭제했어.`;
+    renderReductionSaved();
+  });
+}
+function saveReductionCandidateData(){
+  if(!reductionState)return;
+  const history=getReductionHistory(),targetDraw=reductionState.baseDraw?reductionState.baseDraw+1:null;
+  let record=history.records.find(item=>item.targetDraw===targetDraw);
+  if(!record){record=reductionRecordTemplate(reductionState);history.records.push(record);}
+  if(record.candidateSavedAt){$("reductionSaveInfo").textContent=`${targetDraw}회 후보군 자료는 이미 저장되어 있어.`;return;}
+  record.candidateSavedAt=new Date().toISOString();
+  history.records.sort((a,b)=>(a.targetDraw||0)-(b.targetDraw||0));
+  saveReductionHistory(history);
+  $("reductionSaveInfo").textContent=`✓ ${targetDraw||"다음"}회 후보군 전체 자료 저장 완료`;
+  renderReductionSaved();
+}
+function saveReductionPick(){
+  if(!reductionState||reductionSelected.length!==6)return;
+  const numbers=[...reductionSelected].sort((a,b)=>a-b),targetDraw=reductionState.baseDraw?reductionState.baseDraw+1:null;
+  const history=getReductionHistory();
+  let record=history.records.find(item=>item.targetDraw===targetDraw);
+  if(!record){record=reductionRecordTemplate(reductionState);history.records.push(record);}
+  if(record.sets.some(item=>item.numbers.join(",")===numbers.join(","))){$("reductionSaveInfo").textContent="이미 저장된 조합이야.";return;}
+  record.sets.push({numbers,savedAt:new Date().toISOString()});
+  history.records.sort((a,b)=>(a.targetDraw||0)-(b.targetDraw||0));
+  saveReductionHistory(history);
+  $("reductionSaveInfo").textContent=`✓ ${targetDraw||"다음"}회 후보군과 번호 조합 저장 완료`;
+  renderReductionSaved();
+}
+function reductionHistoryForExport(){
+  return getReductionHistory().records.map(record=>{
+    const target=sourceRows.find(row=>row.draw===record.targetDraw);
+    if(!target)return {...record,result:null};
+    const winning=[...target.nums],candidateSet=new Set(record.candidateNumbers||[]),winSet=new Set(winning);
+    return {...record,result:{winning,bonus:target.bonus,candidateHits:winning.filter(n=>candidateSet.has(n)),candidateHitCount:winning.filter(n=>candidateSet.has(n)).length,sets:(record.sets||[]).map(item=>({numbers:[...item.numbers],savedAt:item.savedAt||null,hits:item.numbers.filter(n=>winSet.has(n)),hitCount:item.numbers.filter(n=>winSet.has(n)).length,bonusHit:item.numbers.includes(target.bonus)&&!winSet.has(target.bonus)}))}};
+  });
+}
 function renderReduction(){
   reductionState=buildReductionState();
   const grid=$("reductionGrid");
@@ -478,6 +544,7 @@ function renderReduction(){
   $("reductionSelection").textContent=reductionSelected.length?`선택: ${reductionSelected.join(" · ")} · ${reductionSelected.length}/6개`:"후보 번호를 선택하세요. 0/6";
   $("reductionHalfBtn").disabled=reductionSelected.length>=6||s.candidates.length<6;
   $("reductionAutoBtn").disabled=s.candidates.length<6;
+  renderReductionSaved();
 }
 function toggleReductionNumber(n){
   if(!reductionState?.candidates.includes(n)) return;
@@ -529,6 +596,7 @@ function reductionCopyText(){
     JSON.stringify({schemaVersion:2,baseDraw:s.baseDraw,windows:{year:s.windows.year,halfYear:s.windows.half,threeMonths:s.windows.quarter},sortOrder:["yearAppearances desc","halfYearAppearances desc","threeMonthAppearances desc"],gradeRule:"same year/halfYear/threeMonths appearance tuple shares one grade",cutoff:{topShare:s.topShare,bottomShare:s.bottomShare,topTarget:s.topTarget,bottomTarget:s.bottomTarget,tiesKeptWhole:true},excluded:{top:s.topExcluded,bottom:s.bottomExcluded,tieBoundaryRetained:s.protectedTies},candidates:s.candidates,selected:[...reductionSelected],ranking:records},null,2),
     "[/NUMBER_REDUCTION_JSON]"
   ];
+  lines.push("", "[NUMBER_REDUCTION_HISTORY_JSON]", JSON.stringify({schemaVersion:1,records:reductionHistoryForExport()},null,2), "[/NUMBER_REDUCTION_HISTORY_JSON]");
   return lines.join("\n");
 }
 async function copyReductionData(){
@@ -1096,7 +1164,9 @@ if($("rarityToggle"))$("rarityToggle").onclick=()=>{
   $("rarityToggle").classList.toggle("open",open);
   $("rarityToggle").setAttribute("aria-expanded",String(open));
 };
-if($("reductionClearBtn"))$("reductionClearBtn").onclick=()=>{reductionSelected=[];renderReduction();};
+if($("reductionClearBtn"))$("reductionClearBtn").onclick=()=>{reductionSelected=[];renderReduction();$("reductionSaveInfo").textContent="";};
+if($("reductionSaveAllBtn"))$("reductionSaveAllBtn").onclick=saveReductionCandidateData;
+if($("reductionPickSaveBtn"))$("reductionPickSaveBtn").onclick=saveReductionPick;
 if($("reductionHalfBtn"))$("reductionHalfBtn").onclick=()=>fillReductionRandom(true);
 if($("reductionAutoBtn"))$("reductionAutoBtn").onclick=()=>fillReductionRandom(false);
 if($("reductionCopyBtn"))$("reductionCopyBtn").onclick=copyReductionData;
