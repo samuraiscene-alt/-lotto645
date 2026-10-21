@@ -119,3 +119,7 @@
 .sectionHead h2,.rankHead h2,.recommendPanel>.row h2{margin-bottom:0}
 
 .rarityPanel{padding:0}.rarityPanel>.savedInline{margin:0;border:0;background:transparent}.rarityPanel .savedInlineToggle{font-size:19px;font-weight:800;padding:16px 18px}.rarityPanel .savedInlineBody{padding:8px 16px 14px}
+
+.reductionActions #reductionClearBtn,.reductionActions #reductionSaveAllBtn{grid-column:auto}.reductionSaved{margin-top:10px;padding:10px 12px;border-radius:13px;background:#f7f8fa}.reductionSavedTitle{font-size:12px;font-weight:800;color:#6b7280;margin-bottom:6px}.reductionSavedList{display:grid;gap:6px}.reductionSavedRow{display:grid;grid-template-columns:25px minmax(0,1fr) auto;align-items:center;gap:6px;padding:8px 9px;border-radius:10px;background:#fff;font-size:12px;font-weight:800}.reductionSavedRow span{min-width:0}.reductionDeleteBtn{padding:6px 9px;font-size:11px;background:#fff0f0;color:#d93025;border-color:#f4cccc}.reductionSaveInfo{min-height:0;margin:5px 2px 0}.reductionSaveInfo:empty{display:none}
+
+.reductionPickSaveBtn{width:100%;margin-top:8px}
