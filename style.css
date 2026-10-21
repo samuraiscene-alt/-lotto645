@@ -97,3 +97,20 @@
 @media(max-width:390px){.reductionGrid{gap:5px}.reductionNum b{font-size:14px}.reductionNum small{font-size:7px}.reductionActions button{padding:10px 7px;font-size:11px}}
 
 .reductionSummary small{display:block;margin-top:5px;color:#526277;font-size:10px;font-weight:700;line-height:1.45}.reductionIntro{line-height:1.5;margin:0 0 10px}
+
+/* Number reduction grade rows: label stays left; number balls flow to the right. */
+.reductionGrid{display:grid;gap:8px}
+.reductionGradeRow{display:grid;grid-template-columns:68px minmax(0,1fr);gap:8px;align-items:stretch}
+.reductionGradeLabel{display:flex;align-items:center;justify-content:center;min-height:40px;padding:7px 4px;border-radius:12px;background:#eaf4ff;color:#0a84ff;font-size:11px;font-weight:850;text-align:center;line-height:1.2}
+.reductionGradeNumbers{display:flex;flex-wrap:wrap;align-content:flex-start;align-items:flex-start;gap:6px;min-width:0}
+.reductionGradeNumbers .reductionNum{flex:0 0 38px;width:38px;height:38px;aspect-ratio:auto}
+.reductionGradeNumbers .reductionNum b{font-size:14px}
+.reductionGradeNumbers .reductionNum small{font-size:8px}
+.reductionGradeNumbers .reductionNum.ineligible{opacity:.32}
+@media(max-width:390px){
+  .reductionGradeRow{grid-template-columns:62px minmax(0,1fr);gap:6px}
+  .reductionGradeNumbers{gap:5px}
+  .reductionGradeNumbers .reductionNum{flex-basis:36px;width:36px;height:36px}
+  .reductionGradeNumbers .reductionNum b{font-size:13px}
+  .reductionGradeNumbers .reductionNum small{font-size:7px}
+}
