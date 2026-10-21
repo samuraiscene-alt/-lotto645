@@ -117,3 +117,5 @@
 
 /* Compact headings after removing helper copy. */
 .sectionHead h2,.rankHead h2,.recommendPanel>.row h2{margin-bottom:0}
+
+.rarityPanel{padding:0}.rarityPanel>.savedInline{margin:0;border:0;background:transparent}.rarityPanel .savedInlineToggle{font-size:19px;font-weight:800;padding:16px 18px}.rarityPanel .savedInlineBody{padding:8px 16px 14px}
