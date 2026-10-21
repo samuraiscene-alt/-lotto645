@@ -148,8 +148,6 @@ function analyze(){
     ? `<b>0회 출현</b> · ${zeroes.join(" · ")}`
     : `<b>0회 출현 번호 없음</b>`;
 
-  $("rankPeriodLabel").textContent =
-    `${periodLabel()} 기준 · 많이 나온 번호부터`;
 
   $("totalHits").textContent =
     `${current.length}회 / ${current.length*6}개 번호`;
@@ -182,11 +180,10 @@ function setLatestUI(){
     </span>`;
 }
 
-function setStatus(kind,text,detail=""){
+function setStatus(kind,text){
   const el = $("updateStatus");
   el.className = `status ${kind}`;
   el.textContent = text;
-  $("updateDetail").textContent = detail;
 }
 
 async function loadAutoData(){
@@ -227,11 +224,7 @@ async function loadAutoData(){
     analyze();
     renderReduction();
 
-    setStatus(
-      "ok",
-      "최신 데이터 확인 완료",
-      `현재 ${latestDrawData.draw}회까지 · ${sourceRows.length}회분 저장 · 새 회차는 GitHub 자동 작업이 확인합니다.`
-    );
+    setStatus("ok","최신 데이터 확인 완료");
 
     autoCheckSaved();
 
@@ -239,11 +232,7 @@ async function loadAutoData(){
 
     console.error(err);
 
-    setStatus(
-      "warn",
-      "업데이트 확인 실패",
-      "기존 화면 데이터가 있으면 그대로 사용할 수 있습니다."
-    );
+    setStatus("warn","업데이트 확인 실패");
   }
 }
 
@@ -472,8 +461,6 @@ function renderReduction(){
   const s=reductionState,candidateSet=new Set(s.candidates);
   reductionSelected=reductionSelected.filter(n=>candidateSet.has(n)).slice(0,6);
   $("reductionSummary").innerHTML=`기준 ${s.baseDraw}회까지 · 후보 ${s.candidates.length}/45개<small>상위 제외: ${s.topExcluded.join(" · ")||"없음"}<br>하위 제외: ${s.bottomExcluded.join(" · ")||"없음"}</small>`;
-  const observed=`${s.windows.year}회 / ${s.windows.half}회 / ${s.windows.quarter}회 자료`;
-  $("reductionRuleNote").textContent=`기간별 자료: ${observed}. 상위 약 ${(s.topShare*100).toFixed(1)}%와 하위 약 ${(s.bottomShare*100).toFixed(1)}%를 제외합니다. 동률은 세 기간 출현 횟수가 모두 같을 때이며, 경계에 걸린 동률 그룹은 쪼개지 않습니다.`;
   grid.innerHTML=s.groups.map((group,gradeIndex)=>`
     <div class="reductionGradeRow">
       <div class="reductionGradeLabel">${gradeIndex+1}등급</div>
