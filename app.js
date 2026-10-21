@@ -225,6 +225,7 @@ async function loadAutoData(){
 
     setLatestUI();
     analyze();
+    renderReduction();
 
     setStatus(
       "ok",
@@ -389,6 +390,155 @@ function weightedPick(pool,weights,k){
   }
 
   return out.sort((a,b)=>a-b);
+}
+
+
+const REDUCTION_TOP_SHARE = 0.099;
+const REDUCTION_BOTTOM_SHARE = 0.218;
+let reductionState = null;
+let reductionSelected = [];
+
+function buildReductionState(){
+  if(!sourceRows.length) return null;
+  const windows = [
+    {key:"year",label:"1년",size:52},
+    {key:"half",label:"6개월",size:26},
+    {key:"quarter",label:"3개월",size:13}
+  ];
+  const counts = Object.fromEntries(windows.map(w=>{
+    const tally=Array(46).fill(0);
+    sourceRows.slice(0,w.size).forEach(row=>row.nums.forEach(n=>tally[n]++));
+    return [w.key,tally];
+  }));
+  const ranked=Array.from({length:45},(_,i)=>i+1).sort((a,b)=>
+    counts.year[b]-counts.year[a] ||
+    counts.half[b]-counts.half[a] ||
+    counts.quarter[b]-counts.quarter[a] ||
+    a-b
+  );
+  const groups=[];
+  for(const n of ranked){
+    const key=[counts.year[n],counts.half[n],counts.quarter[n]].join("|");
+    let group=groups[groups.length-1];
+    if(!group||group.key!==key){
+      group={key,nums:[],start:ranked.indexOf(n),end:0};
+      groups.push(group);
+    }
+    group.nums.push(n);
+    group.end=group.start+group.nums.length;
+  }
+  const topTarget=Math.round(45*REDUCTION_TOP_SHARE);
+  const bottomTarget=Math.round(45*REDUCTION_BOTTOM_SHARE);
+  const topBoundary=topTarget;
+  const bottomBoundary=45-bottomTarget;
+  const topExcluded=[],bottomExcluded=[],protectedTies=[];
+  groups.forEach(group=>{
+    const touchesTop=group.start<topBoundary;
+    const touchesBottom=group.end>bottomBoundary;
+    if(touchesTop&&touchesBottom){
+      protectedTies.push(...group.nums);
+      return;
+    }
+    if(touchesTop) topExcluded.push(...group.nums);
+    if(touchesBottom) bottomExcluded.push(...group.nums);
+  });
+  const excluded=new Set([...topExcluded,...bottomExcluded]);
+  const candidates=ranked.filter(n=>!excluded.has(n));
+  const rankByNumber={};
+  let rank=1;
+  groups.forEach(group=>{
+    group.nums.forEach(n=>rankByNumber[n]=rank);
+    rank+=group.nums.length;
+  });
+  return {
+    baseDraw:sourceRows[0]?.draw||null,
+    windows:Object.fromEntries(windows.map(w=>[w.key,Math.min(w.size,sourceRows.length)])),
+    counts,ranked,groups,rankByNumber,candidates,topExcluded,bottomExcluded,
+    protectedTies,topTarget,bottomTarget,topShare:REDUCTION_TOP_SHARE,bottomShare:REDUCTION_BOTTOM_SHARE
+  };
+}
+function renderReduction(){
+  reductionState=buildReductionState();
+  const grid=$("reductionGrid");
+  if(!grid) return;
+  if(!reductionState){
+    $("reductionSummary").textContent="당첨 데이터를 불러오는 중입니다.";
+    grid.innerHTML="";
+    return;
+  }
+  const s=reductionState,candidateSet=new Set(s.candidates);
+  reductionSelected=reductionSelected.filter(n=>candidateSet.has(n)).slice(0,6);
+  $("reductionSummary").innerHTML=`기준 ${s.baseDraw}회까지 · 후보 ${s.candidates.length}/45개 · 상위 제외 ${s.topExcluded.length}개 · 하위 제외 ${s.bottomExcluded.length}개`;
+  const observed=`${s.windows.year}회 / ${s.windows.half}회 / ${s.windows.quarter}회 자료`;
+  $("reductionRuleNote").textContent=`기간별 자료: ${observed}. 상위 약 ${(s.topShare*100).toFixed(1)}%와 하위 약 ${(s.bottomShare*100).toFixed(1)}%를 제외합니다. 동률은 세 기간 출현 횟수가 모두 같을 때이며, 경계에 걸린 동률 그룹은 쪼개지 않습니다.`;
+  grid.innerHTML=s.ranked.map(n=>{
+    const counts=[s.counts.year[n],s.counts.half[n],s.counts.quarter[n]];
+    const selected=reductionSelected.includes(n);
+    const status=candidateSet.has(n)?"후보군 포함":s.topExcluded.includes(n)?"상위 제외":s.bottomExcluded.includes(n)?"하위 제외":"동률 경계 보류";
+    return `<button type="button" class="reductionNum ${candidateSet.has(n)?"eligible":"ineligible"} ${selected?"selected":""}" data-number="${n}" ${candidateSet.has(n)?"":"disabled"} aria-label="${n}번, 1년 ${counts[0]}회, 6개월 ${counts[1]}회, 3개월 ${counts[2]}회, ${status}" title="${status} · 1년 ${counts[0]}회 / 6개월 ${counts[1]}회 / 3개월 ${counts[2]}회"><b>${n}</b><small>${counts.join("·")}</small></button>`;
+  }).join("");
+  grid.querySelectorAll(".reductionNum.eligible").forEach(button=>button.onclick=()=>toggleReductionNumber(Number(button.dataset.number)));
+  $("reductionSelection").textContent=reductionSelected.length?`선택: ${reductionSelected.join(" · ")} · ${reductionSelected.length}/6개`:"후보 번호를 선택하세요. 0/6";
+  $("reductionHalfBtn").disabled=reductionSelected.length!==3||s.candidates.length<6;
+  $("reductionAutoBtn").disabled=s.candidates.length<6;
+}
+function toggleReductionNumber(n){
+  if(!reductionState?.candidates.includes(n)) return;
+  if(reductionSelected.includes(n)) reductionSelected=reductionSelected.filter(x=>x!==n);
+  else if(reductionSelected.length<6) reductionSelected=[...reductionSelected,n].sort((a,b)=>a-b);
+  renderReduction();
+}
+function randomSample(pool,count){
+  const shuffled=[...pool];
+  for(let i=shuffled.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];
+  }
+  return shuffled.slice(0,count).sort((a,b)=>a-b);
+}
+function fillReductionRandom(keepCount){
+  if(!reductionState||reductionState.candidates.length<6) return;
+  const keep=keepCount?reductionSelected:[];
+  const remaining=reductionState.candidates.filter(n=>!keep.includes(n));
+  reductionSelected=[...keep,...randomSample(remaining,6-keep.length)].sort((a,b)=>a-b);
+  renderReduction();
+}
+function reductionCopyText(){
+  if(!reductionState) return "당첨 데이터를 아직 불러오지 못했습니다.";
+  const s=reductionState;
+  const excluded=new Set([...s.topExcluded,...s.bottomExcluded]);
+  const records=s.ranked.map(n=>({
+    number:n,
+    rank:s.rankByNumber[n],
+    appearances:{year:s.counts.year[n],halfYear:s.counts.half[n],threeMonths:s.counts.quarter[n]},
+    status:s.candidates.includes(n)?"candidate":s.topExcluded.includes(n)?"excluded_top":s.bottomExcluded.includes(n)?"excluded_bottom":"tie_boundary_retained"
+  }));
+  const lines=[
+    "[LOTTO 6/45 번호 추리기 자료]",
+    `기준 당첨 회차: ${s.baseDraw}회 (이 회차까지의 자료로 다음 회차 후보 계산)`,
+    `사용 자료: 1년 ${s.windows.year}회 · 6개월 ${s.windows.half}회 · 3개월 ${s.windows.quarter}회`,
+    "정렬: 1년 출현 횟수 우선 → 동률이면 6개월 → 다시 동률이면 3개월. 세 기간 횟수가 모두 같으면 동률.",
+    `제외: 상위 약 ${(s.topShare*100).toFixed(1)}% 목표 ${s.topTarget}개, 하위 약 ${(s.bottomShare*100).toFixed(1)}% 목표 ${s.bottomTarget}개. 경계 동률은 나누지 않음.`,
+    `상위 제외 번호: ${s.topExcluded.join(" · ")||"없음"}`,
+    `하위 제외 번호: ${s.bottomExcluded.join(" · ")||"없음"}`,
+    `경계 동률로 제외하지 않은 번호: ${s.protectedTies.join(" · ")||"없음"}`,
+    `후보군 (${s.candidates.length}개): ${s.candidates.join(" · ")}`,
+    `현재 선택: ${reductionSelected.length?reductionSelected.join(" · "):"없음"}`,
+    "",
+    "번호별 순위 및 기간별 출현 횟수는 아래 구조화 JSON에 포함됩니다.",
+    "[NUMBER_REDUCTION_JSON]",
+    JSON.stringify({schemaVersion:1,baseDraw:s.baseDraw,windows:{year:s.windows.year,halfYear:s.windows.half,threeMonths:s.windows.quarter},sortOrder:["yearAppearances desc","halfYearAppearances desc","threeMonthAppearances desc"],cutoff:{topShare:s.topShare,bottomShare:s.bottomShare,topTarget:s.topTarget,bottomTarget:s.bottomTarget,tiesKeptWhole:true},excluded:{top:s.topExcluded,bottom:s.bottomExcluded,tieBoundaryRetained:s.protectedTies},candidates:s.candidates,selected:[...reductionSelected],ranking:records},null,2),
+    "[/NUMBER_REDUCTION_JSON]"
+  ];
+  return lines.join("\n");
+}
+async function copyReductionData(){
+  const text=reductionCopyText(),button=$("reductionCopyBtn");
+  try{await navigator.clipboard.writeText(text);}
+  catch{
+    const area=document.createElement("textarea");area.value=text;area.style.position="fixed";area.style.opacity="0";document.body.appendChild(area);area.select();document.execCommand("copy");area.remove();
+  }
+  const old=button.textContent;button.textContent="✓ 복사 완료";setTimeout(()=>button.textContent=old,1800);
 }
 
 function countsFor(limit){
@@ -931,6 +1081,12 @@ function check(){
           먼저 추천 조합을 생성하세요.
         </div>`;
 }
+
+
+if($("reductionClearBtn"))$("reductionClearBtn").onclick=()=>{reductionSelected=[];renderReduction();};
+if($("reductionHalfBtn"))$("reductionHalfBtn").onclick=()=>fillReductionRandom(3);
+if($("reductionAutoBtn"))$("reductionAutoBtn").onclick=()=>fillReductionRandom(0);
+if($("reductionCopyBtn"))$("reductionCopyBtn").onclick=copyReductionData;
 
 $("gptCopyBtn").onclick=copyGptAnalysis;
 
