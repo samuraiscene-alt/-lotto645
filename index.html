@@ -7,7 +7,7 @@
 <title>로또 6/45 분석기</title>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="style.css?v=20260929-manual-gpt">
+<link rel="stylesheet" href="style.css?v=20261021-number-reduction">
 </head>
 <body>
 <div class="wrap">
@@ -66,6 +66,23 @@
   <div id="sets" class="sets"></div>
 </section>
 
+<section class="panel reductionPanel" id="reductionPanel">
+  <div class="sectionHead">
+    <div><h2>번호 줄이기</h2><p class="hint">최근 1년 횟수를 먼저 비교하고, 동률이면 6개월 → 3개월 횟수 순으로 정렬합니다.</p></div>
+  </div>
+  <div id="reductionSummary" class="reductionSummary">당첨 데이터를 불러오는 중입니다.</div>
+  <div id="reductionRuleNote" class="reductionRuleNote"></div>
+  <div id="reductionGrid" class="reductionGrid" role="group" aria-label="후보군에서 번호 선택"></div>
+  <div id="reductionSelection" class="reductionSelection">후보 번호를 선택하세요. 0/6</div>
+  <div class="reductionActions">
+    <button type="button" class="secondary" id="reductionClearBtn">선택 초기화</button>
+    <button type="button" class="secondary" id="reductionHalfBtn">선택한 3개 + 자동 3개</button>
+    <button type="button" class="primary" id="reductionAutoBtn">후보군에서 자동 6개</button>
+  </div>
+  <button type="button" class="gptCopyBtn" id="reductionCopyBtn">번호 추리기 자료 복사</button>
+  <p class="hint reductionFootnote">자동 선택은 후보군 안에서 무작위로 고릅니다. 과거 출현 통계가 다음 추첨의 당첨 확률을 높여주지는 않습니다.</p>
+</section>
+
 <section class="panel rarityPanel"><div class="sectionHead"><div><h2>내 번호 희소성 분석</h2><p class="hint">6개 번호를 선택하면 공동선택 희소성을 즉시 분석합니다.</p></div></div><div id="rarityGrid" class="rarityGrid"></div><div id="rarityResult" class="rarityResult empty">번호 6개를 선택하세요.</div><p class="hint">희소성은 과거 수동 공동당첨 패턴과의 비교 지표이며 당첨확률과는 무관합니다.</p></section>
 
 <section class="panel backtestPanel">
@@ -97,6 +114,6 @@
   </div>
 </div>
 </div>
-<script src="app.js?v=20260929-manual-gpt"></script>
+<script src="app.js?v=20261021-number-reduction"></script>
 </body>
 </html>
