@@ -1090,6 +1090,12 @@ if($("reductionToggle"))$("reductionToggle").onclick=()=>{
   $("reductionToggle").classList.toggle("open",open);
   $("reductionToggle").setAttribute("aria-expanded",String(open));
 };
+if($("rarityToggle"))$("rarityToggle").onclick=()=>{
+  const body=$("rarityBody"),open=body.hidden;
+  body.hidden=!open;
+  $("rarityToggle").classList.toggle("open",open);
+  $("rarityToggle").setAttribute("aria-expanded",String(open));
+};
 if($("reductionClearBtn"))$("reductionClearBtn").onclick=()=>{reductionSelected=[];renderReduction();};
 if($("reductionHalfBtn"))$("reductionHalfBtn").onclick=()=>fillReductionRandom(true);
 if($("reductionAutoBtn"))$("reductionAutoBtn").onclick=()=>fillReductionRandom(false);
