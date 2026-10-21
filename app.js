@@ -479,7 +479,7 @@ function renderReduction(){
   }).join("");
   grid.querySelectorAll(".reductionNum.eligible").forEach(button=>button.onclick=()=>toggleReductionNumber(Number(button.dataset.number)));
   $("reductionSelection").textContent=reductionSelected.length?`선택: ${reductionSelected.join(" · ")} · ${reductionSelected.length}/6개`:"후보 번호를 선택하세요. 0/6";
-  $("reductionHalfBtn").disabled=reductionSelected.length!==3||s.candidates.length<6;
+  $("reductionHalfBtn").disabled=reductionSelected.length>=6||s.candidates.length<6;
   $("reductionAutoBtn").disabled=s.candidates.length<6;
 }
 function toggleReductionNumber(n){
@@ -1085,9 +1085,15 @@ function check(){
 
 if($("reductionOpenBtn"))$("reductionOpenBtn").onclick=()=>{$("reductionPanel").hidden=false;$("reductionPanel").scrollIntoView({behavior:"smooth",block:"start"});};
 if($("reductionCloseBtn"))$("reductionCloseBtn").onclick=()=>{$("reductionPanel").hidden=true;$("reductionOpenBtn").scrollIntoView({behavior:"smooth",block:"center"});};
+if($("reductionToggle"))$("reductionToggle").onclick=()=>{
+  const body=$("reductionBody"),open=body.hidden;
+  body.hidden=!open;
+  $("reductionToggle").classList.toggle("open",open);
+  $("reductionToggle").setAttribute("aria-expanded",String(open));
+};
 if($("reductionClearBtn"))$("reductionClearBtn").onclick=()=>{reductionSelected=[];renderReduction();};
-if($("reductionHalfBtn"))$("reductionHalfBtn").onclick=()=>fillReductionRandom(3);
-if($("reductionAutoBtn"))$("reductionAutoBtn").onclick=()=>fillReductionRandom(0);
+if($("reductionHalfBtn"))$("reductionHalfBtn").onclick=()=>fillReductionRandom(true);
+if($("reductionAutoBtn"))$("reductionAutoBtn").onclick=()=>fillReductionRandom(false);
 if($("reductionCopyBtn"))$("reductionCopyBtn").onclick=copyReductionData;
 
 $("gptCopyBtn").onclick=copyGptAnalysis;
