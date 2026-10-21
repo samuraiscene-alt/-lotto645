@@ -468,7 +468,7 @@ function renderReduction(){
   }
   const s=reductionState,candidateSet=new Set(s.candidates);
   reductionSelected=reductionSelected.filter(n=>candidateSet.has(n)).slice(0,6);
-  $("reductionSummary").innerHTML=`기준 ${s.baseDraw}회까지 · 후보 ${s.candidates.length}/45개 · 상위 제외 ${s.topExcluded.length}개 · 하위 제외 ${s.bottomExcluded.length}개`;
+  $("reductionSummary").innerHTML=`기준 ${s.baseDraw}회까지 · 후보 ${s.candidates.length}/45개<small>상위 제외: ${s.topExcluded.join(" · ")||"없음"}<br>하위 제외: ${s.bottomExcluded.join(" · ")||"없음"}</small>`;
   const observed=`${s.windows.year}회 / ${s.windows.half}회 / ${s.windows.quarter}회 자료`;
   $("reductionRuleNote").textContent=`기간별 자료: ${observed}. 상위 약 ${(s.topShare*100).toFixed(1)}%와 하위 약 ${(s.bottomShare*100).toFixed(1)}%를 제외합니다. 동률은 세 기간 출현 횟수가 모두 같을 때이며, 경계에 걸린 동률 그룹은 쪼개지 않습니다.`;
   grid.innerHTML=s.ranked.map(n=>{
@@ -1083,6 +1083,8 @@ function check(){
 }
 
 
+if($("reductionOpenBtn"))$("reductionOpenBtn").onclick=()=>{$("reductionPanel").hidden=false;$("reductionPanel").scrollIntoView({behavior:"smooth",block:"start"});};
+if($("reductionCloseBtn"))$("reductionCloseBtn").onclick=()=>{$("reductionPanel").hidden=true;$("reductionOpenBtn").scrollIntoView({behavior:"smooth",block:"center"});};
 if($("reductionClearBtn"))$("reductionClearBtn").onclick=()=>{reductionSelected=[];renderReduction();};
 if($("reductionHalfBtn"))$("reductionHalfBtn").onclick=()=>fillReductionRandom(3);
 if($("reductionAutoBtn"))$("reductionAutoBtn").onclick=()=>fillReductionRandom(0);
