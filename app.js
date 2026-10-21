@@ -444,16 +444,19 @@ function buildReductionState(){
   });
   const excluded=new Set([...topExcluded,...bottomExcluded]);
   const candidates=ranked.filter(n=>!excluded.has(n));
-  const rankByNumber={};
+  const rankByNumber={},gradeByNumber={};
   let rank=1;
-  groups.forEach(group=>{
-    group.nums.forEach(n=>rankByNumber[n]=rank);
+  groups.forEach((group,groupIndex)=>{
+    group.nums.forEach(n=>{
+      rankByNumber[n]=rank;
+      gradeByNumber[n]=groupIndex+1;
+    });
     rank+=group.nums.length;
   });
   return {
     baseDraw:sourceRows[0]?.draw||null,
     windows:Object.fromEntries(windows.map(w=>[w.key,Math.min(w.size,sourceRows.length)])),
-    counts,ranked,groups,rankByNumber,candidates,topExcluded,bottomExcluded,
+    counts,ranked,groups,rankByNumber,gradeByNumber,candidates,topExcluded,bottomExcluded,
     protectedTies,topTarget,bottomTarget,topShare:REDUCTION_TOP_SHARE,bottomShare:REDUCTION_BOTTOM_SHARE
   };
 }
@@ -471,12 +474,19 @@ function renderReduction(){
   $("reductionSummary").innerHTML=`기준 ${s.baseDraw}회까지 · 후보 ${s.candidates.length}/45개<small>상위 제외: ${s.topExcluded.join(" · ")||"없음"}<br>하위 제외: ${s.bottomExcluded.join(" · ")||"없음"}</small>`;
   const observed=`${s.windows.year}회 / ${s.windows.half}회 / ${s.windows.quarter}회 자료`;
   $("reductionRuleNote").textContent=`기간별 자료: ${observed}. 상위 약 ${(s.topShare*100).toFixed(1)}%와 하위 약 ${(s.bottomShare*100).toFixed(1)}%를 제외합니다. 동률은 세 기간 출현 횟수가 모두 같을 때이며, 경계에 걸린 동률 그룹은 쪼개지 않습니다.`;
-  grid.innerHTML=s.ranked.map(n=>{
-    const counts=[s.counts.year[n],s.counts.half[n],s.counts.quarter[n]];
-    const selected=reductionSelected.includes(n);
-    const status=candidateSet.has(n)?"후보군 포함":s.topExcluded.includes(n)?"상위 제외":s.bottomExcluded.includes(n)?"하위 제외":"동률 경계 보류";
-    return `<button type="button" class="reductionNum ${candidateSet.has(n)?"eligible":"ineligible"} ${selected?"selected":""}" data-number="${n}" ${candidateSet.has(n)?"":"disabled"} aria-label="${n}번, 1년 ${counts[0]}회, 6개월 ${counts[1]}회, 3개월 ${counts[2]}회, ${status}" title="${status} · 1년 ${counts[0]}회 / 6개월 ${counts[1]}회 / 3개월 ${counts[2]}회"><b>${n}</b><small>${counts.join("·")}</small></button>`;
-  }).join("");
+  grid.innerHTML=s.groups.map((group,gradeIndex)=>`
+    <div class="reductionGradeRow">
+      <div class="reductionGradeLabel">${gradeIndex+1}등급</div>
+      <div class="reductionGradeNumbers">
+        ${group.nums.map(n=>{
+          const counts=[s.counts.year[n],s.counts.half[n],s.counts.quarter[n]];
+          const selected=reductionSelected.includes(n);
+          const status=candidateSet.has(n)?"후보군 포함":s.topExcluded.includes(n)?"상위 제외":s.bottomExcluded.includes(n)?"하위 제외":"동률 경계 보류";
+          return `<button type="button" class="reductionNum ${candidateSet.has(n)?"eligible":"ineligible"} ${selected?"selected":""}" data-number="${n}" ${candidateSet.has(n)?"":"disabled"} aria-label="${gradeIndex+1}등급, ${n}번, 1년 ${counts[0]}회, 6개월 ${counts[1]}회, 3개월 ${counts[2]}회, ${status}" title="${gradeIndex+1}등급 · ${status} · 1년 ${counts[0]}회 / 6개월 ${counts[1]}회 / 3개월 ${counts[2]}회"><b>${n}</b><small>${counts.join("·")}</small></button>`;
+        }).join("")}
+      </div>
+    </div>
+  `).join("");
   grid.querySelectorAll(".reductionNum.eligible").forEach(button=>button.onclick=()=>toggleReductionNumber(Number(button.dataset.number)));
   $("reductionSelection").textContent=reductionSelected.length?`선택: ${reductionSelected.join(" · ")} · ${reductionSelected.length}/6개`:"후보 번호를 선택하세요. 0/6";
   $("reductionHalfBtn").disabled=reductionSelected.length>=6||s.candidates.length<6;
@@ -509,6 +519,7 @@ function reductionCopyText(){
   const excluded=new Set([...s.topExcluded,...s.bottomExcluded]);
   const records=s.ranked.map(n=>({
     number:n,
+    grade:s.gradeByNumber[n],
     rank:s.rankByNumber[n],
     appearances:{year:s.counts.year[n],halfYear:s.counts.half[n],threeMonths:s.counts.quarter[n]},
     status:s.candidates.includes(n)?"candidate":s.topExcluded.includes(n)?"excluded_top":s.bottomExcluded.includes(n)?"excluded_bottom":"tie_boundary_retained"
@@ -518,6 +529,7 @@ function reductionCopyText(){
     `기준 당첨 회차: ${s.baseDraw}회 (이 회차까지의 자료로 다음 회차 후보 계산)`,
     `사용 자료: 1년 ${s.windows.year}회 · 6개월 ${s.windows.half}회 · 3개월 ${s.windows.quarter}회`,
     "정렬: 1년 출현 횟수 우선 → 동률이면 6개월 → 다시 동률이면 3개월. 세 기간 횟수가 모두 같으면 동률.",
+    "등급: 세 기간의 출현 횟수 조합이 같은 번호를 한 등급으로 묶으며, 실제 데이터에 따라 등급 수가 달라집니다.",
     `제외: 상위 약 ${(s.topShare*100).toFixed(1)}% 목표 ${s.topTarget}개, 하위 약 ${(s.bottomShare*100).toFixed(1)}% 목표 ${s.bottomTarget}개. 경계 동률은 나누지 않음.`,
     `상위 제외 번호: ${s.topExcluded.join(" · ")||"없음"}`,
     `하위 제외 번호: ${s.bottomExcluded.join(" · ")||"없음"}`,
@@ -527,7 +539,7 @@ function reductionCopyText(){
     "",
     "번호별 순위 및 기간별 출현 횟수는 아래 구조화 JSON에 포함됩니다.",
     "[NUMBER_REDUCTION_JSON]",
-    JSON.stringify({schemaVersion:1,baseDraw:s.baseDraw,windows:{year:s.windows.year,halfYear:s.windows.half,threeMonths:s.windows.quarter},sortOrder:["yearAppearances desc","halfYearAppearances desc","threeMonthAppearances desc"],cutoff:{topShare:s.topShare,bottomShare:s.bottomShare,topTarget:s.topTarget,bottomTarget:s.bottomTarget,tiesKeptWhole:true},excluded:{top:s.topExcluded,bottom:s.bottomExcluded,tieBoundaryRetained:s.protectedTies},candidates:s.candidates,selected:[...reductionSelected],ranking:records},null,2),
+    JSON.stringify({schemaVersion:2,baseDraw:s.baseDraw,windows:{year:s.windows.year,halfYear:s.windows.half,threeMonths:s.windows.quarter},sortOrder:["yearAppearances desc","halfYearAppearances desc","threeMonthAppearances desc"],gradeRule:"same year/halfYear/threeMonths appearance tuple shares one grade",cutoff:{topShare:s.topShare,bottomShare:s.bottomShare,topTarget:s.topTarget,bottomTarget:s.bottomTarget,tiesKeptWhole:true},excluded:{top:s.topExcluded,bottom:s.bottomExcluded,tieBoundaryRetained:s.protectedTies},candidates:s.candidates,selected:[...reductionSelected],ranking:records},null,2),
     "[/NUMBER_REDUCTION_JSON]"
   ];
   return lines.join("\n");
