@@ -78,7 +78,6 @@
 .manualEntry{margin-top:12px;border:1px solid rgba(15,23,42,.08);border-radius:14px;background:#f7f8fa;overflow:hidden}.manualEntry>summary{padding:13px 14px;font-size:14px;font-weight:800;cursor:pointer;list-style:none}.manualEntry>summary::-webkit-details-marker{display:none}.manualEntry>summary:after{content:"›";float:right;color:#8e8e93;transform:rotate(90deg)}.manualEntry[open]>summary:after{transform:rotate(-90deg)}.manualEntryBody{padding:0 12px 12px}.manualEntryBody textarea{min-height:160px;margin:9px 0;font-size:15px;background:#fff}.manualEntryBody button{width:100%}.manualEntryBody #manualSaveInfo{margin-top:8px;line-height:1.4}
 
 /* Number reduction: isolated styles, no changes to recommendation controls */
-.reductionPanel{scroll-margin-top:16px}
 .reductionSummary{padding:12px 14px;border-radius:13px;background:#eaf4ff;color:#0a84ff;font-size:14px;font-weight:850}
 .reductionRuleNote{margin:9px 2px 12px;color:#6b7280;font-size:11px;line-height:1.55}
 .reductionGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
@@ -97,4 +96,4 @@
 .reductionFootnote{margin-top:9px;line-height:1.5}
 @media(max-width:390px){.reductionGrid{gap:5px}.reductionNum b{font-size:14px}.reductionNum small{font-size:7px}.reductionActions button{padding:10px 7px;font-size:11px}}
 
-.reductionSummary small{display:block;margin-top:5px;color:#526277;font-size:10px;font-weight:700;line-height:1.45}.reductionOpenBtn{width:100%;margin-top:10px}.reductionCloseBtn{width:100%;margin-top:10px}
+.reductionSummary small{display:block;margin-top:5px;color:#526277;font-size:10px;font-weight:700;line-height:1.45}.reductionIntro{line-height:1.5;margin:0 0 10px}
