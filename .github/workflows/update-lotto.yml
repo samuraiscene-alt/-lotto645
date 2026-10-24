@@ -2,8 +2,8 @@ name: Lotto data auto update
 
 on:
   schedule:
-    # 한국시간 매주 토요일 22:10 (UTC 13:10) - 추첨 후 결과 반영 여유 1시간
-    - cron: "10 13 * * 6"
+    # 한국시간 매주 토요일 21:10 (UTC 12:10) - 추첨 후 결과 반영
+    - cron: "10 12 * * 6"
   workflow_dispatch:
 
 permissions:
