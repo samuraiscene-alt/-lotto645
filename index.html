@@ -47,14 +47,13 @@
 </section>
 
 <section class="panel recommendPanel">
-  <div class="row recommendAccordionHead">
+  <div class="recommendAccordionHead">
     <button type="button" id="recommendToggle" class="recommendAccordionToggle" aria-expanded="false" aria-controls="recommendBody"><span>종합 추천</span><b>⌄</b></button>
-    <button type="button" class="wheelSelect countWheel" id="setCountWheelBtn" data-wheel="count"><span>10세트</span><b>⌃⌄</b></button><select id="setCount" hidden><option>5</option><option selected>10</option><option>20</option></select>
   </div>
   <div id="recommendBody" class="recommendBody" hidden>
   <button type="button" class="wheelSelect strategyWheel" id="strategyWheelBtn" data-wheel="strategy"><span>종합형</span><b>⌃⌄</b></button>
   <label class="rareToggle"><span><b>희소성 체크</b></span><input id="rareMode" type="checkbox"><i class="iosSwitch" aria-hidden="true"></i></label>
-  <div class="recommendActions"><button class="primary" id="generateBtn">추천번호 만들기</button><button class="secondary includeToggleBtn" id="includeToggleBtn" type="button"><span id="includeCount">고정수 0개</span></button><button class="secondary excludeToggleBtn" id="excludeToggleBtn" type="button"><span id="excludeCount">제외수 0개</span></button></div>
+  <div class="recommendActions recommendControls"><button class="primary" id="generateBtn">추천번호 만들기</button><button type="button" class="wheelSelect countWheel" id="setCountWheelBtn" data-wheel="count"><span>10세트</span><b>⌃⌄</b></button><select id="setCount" hidden><option>5</option><option selected>10</option><option>20</option></select><button class="secondary includeToggleBtn" id="includeToggleBtn" type="button"><span id="includeCount">고정수 0개</span></button><button class="secondary excludeToggleBtn" id="excludeToggleBtn" type="button"><span id="excludeCount">제외수 0개</span></button></div>
   <div id="includePicker" class="includePicker" hidden><div class="includePickerTitle">우선 추천할 고정수 후보를 선택하세요</div><div id="includeGrid" class="includeGrid"></div><div id="includeSelected" class="includeSelected">선택된 고정수 없음</div></div>
   <div id="excludePicker" class="excludePicker" hidden><div class="excludePickerTitle">제외할 번호를 선택하세요 <span>(최대 39개)</span></div><div id="excludeGrid" class="excludeGrid"></div><div id="excludeSelected" class="excludeSelected">선택된 번호 없음 · 최대 39개</div></div>
   <div class="saveRow"><button id="saveBtn" disabled>이번 주 추천번호 저장</button><span id="saveInfo" class="hint"></span></div>
