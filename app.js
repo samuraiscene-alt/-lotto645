@@ -1180,7 +1180,7 @@ function autoCheckSaved(){
   const years=new Map();
   history.forEach(saved=>{
     const dateText=reductionRecordDate(saved);
-    const date=new Date(/^\\d{4}-\\d{2}-\\d{2}$/.test(dateText)?dateText+"T12:00:00":dateText||saved.savedAt||"");
+    const date=new Date(/^\d{4}-\d{2}-\d{2}$/.test(dateText)?dateText+"T12:00:00":dateText||saved.savedAt||"");
     const fallback=new Date(saved.savedAt||Date.now());
     const year=Number.isNaN(date.getTime())?fallback.getFullYear():date.getFullYear();
     const month=Number.isNaN(date.getTime())?fallback.getMonth()+1:date.getMonth()+1;
