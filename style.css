@@ -144,3 +144,7 @@
 .reductionYearGroup,.reductionMonthGroup{border:1px solid rgba(124,58,237,.15);border-radius:12px;background:#faf8ff;overflow:hidden}
 .reductionYearGroup>summary,.reductionMonthGroup>summary{display:flex;align-items:center;gap:8px;list-style:none;padding:10px;cursor:pointer;color:#7c3aed;font-weight:850}.reductionYearGroup>summary::-webkit-details-marker,.reductionMonthGroup>summary::-webkit-details-marker{display:none}.reductionYearGroup>summary span,.reductionMonthGroup>summary span{flex:1}.reductionYearGroup>summary b,.reductionMonthGroup>summary b{font-size:10px;color:#6b5a9a}.reductionYearGroup>summary i,.reductionMonthGroup>summary i{font-style:normal;color:#8e8e93;transition:transform .2s}.reductionYearGroup[open]>summary i,.reductionMonthGroup[open]>summary i{transform:rotate(180deg)}
 .reductionYearBody{display:grid;gap:7px;padding:0 7px 7px}.reductionMonthGroup{background:#fff}.reductionMonthBody{display:grid;gap:6px;padding:0 6px 6px}
+
+
+/* Separate number reduction from the recommendation feature card. */
+.reductionPanel{padding:0;overflow:hidden}.reductionPanel>#reductionAccordion{margin:0;border:0;border-radius:22px;background:transparent}.reductionPanel #reductionToggle{padding:16px 18px}.reductionPanel #reductionBody{padding:14px 16px 16px;border-top:1px solid rgba(124,58,237,.12)}
