@@ -352,7 +352,504 @@
             "bonusHit": true
           }
         ]
-      }
+      },
+      "ranking": [
+        {
+          "number": 38,
+          "grade": 1,
+          "rank": 1,
+          "appearances": {
+            "year": 11,
+            "halfYear": 5,
+            "threeMonths": 4
+          },
+          "status": "excluded_top"
+        },
+        {
+          "number": 31,
+          "grade": 2,
+          "rank": 2,
+          "appearances": {
+            "year": 11,
+            "halfYear": 5,
+            "threeMonths": 3
+          },
+          "status": "excluded_top"
+        },
+        {
+          "number": 27,
+          "grade": 3,
+          "rank": 3,
+          "appearances": {
+            "year": 11,
+            "halfYear": 2,
+            "threeMonths": 1
+          },
+          "status": "excluded_top"
+        },
+        {
+          "number": 13,
+          "grade": 4,
+          "rank": 4,
+          "appearances": {
+            "year": 10,
+            "halfYear": 9,
+            "threeMonths": 5
+          },
+          "status": "excluded_top"
+        },
+        {
+          "number": 28,
+          "grade": 5,
+          "rank": 5,
+          "appearances": {
+            "year": 10,
+            "halfYear": 5,
+            "threeMonths": 2
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 15,
+          "grade": 6,
+          "rank": 6,
+          "appearances": {
+            "year": 10,
+            "halfYear": 3,
+            "threeMonths": 2
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 18,
+          "grade": 7,
+          "rank": 7,
+          "appearances": {
+            "year": 9,
+            "halfYear": 8,
+            "threeMonths": 4
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 16,
+          "grade": 8,
+          "rank": 8,
+          "appearances": {
+            "year": 9,
+            "halfYear": 5,
+            "threeMonths": 3
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 24,
+          "grade": 8,
+          "rank": 8,
+          "appearances": {
+            "year": 9,
+            "halfYear": 5,
+            "threeMonths": 3
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 1,
+          "grade": 9,
+          "rank": 10,
+          "appearances": {
+            "year": 9,
+            "halfYear": 3,
+            "threeMonths": 2
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 32,
+          "grade": 10,
+          "rank": 11,
+          "appearances": {
+            "year": 8,
+            "halfYear": 5,
+            "threeMonths": 3
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 42,
+          "grade": 11,
+          "rank": 12,
+          "appearances": {
+            "year": 8,
+            "halfYear": 5,
+            "threeMonths": 2
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 44,
+          "grade": 11,
+          "rank": 12,
+          "appearances": {
+            "year": 8,
+            "halfYear": 5,
+            "threeMonths": 2
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 34,
+          "grade": 12,
+          "rank": 14,
+          "appearances": {
+            "year": 7,
+            "halfYear": 5,
+            "threeMonths": 3
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 4,
+          "grade": 13,
+          "rank": 15,
+          "appearances": {
+            "year": 7,
+            "halfYear": 5,
+            "threeMonths": 2
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 22,
+          "grade": 13,
+          "rank": 15,
+          "appearances": {
+            "year": 7,
+            "halfYear": 5,
+            "threeMonths": 2
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 20,
+          "grade": 14,
+          "rank": 17,
+          "appearances": {
+            "year": 7,
+            "halfYear": 4,
+            "threeMonths": 2
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 41,
+          "grade": 15,
+          "rank": 18,
+          "appearances": {
+            "year": 7,
+            "halfYear": 4,
+            "threeMonths": 1
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 2,
+          "grade": 16,
+          "rank": 19,
+          "appearances": {
+            "year": 7,
+            "halfYear": 3,
+            "threeMonths": 2
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 25,
+          "grade": 17,
+          "rank": 20,
+          "appearances": {
+            "year": 7,
+            "halfYear": 3,
+            "threeMonths": 1
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 36,
+          "grade": 17,
+          "rank": 20,
+          "appearances": {
+            "year": 7,
+            "halfYear": 3,
+            "threeMonths": 1
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 30,
+          "grade": 18,
+          "rank": 22,
+          "appearances": {
+            "year": 7,
+            "halfYear": 2,
+            "threeMonths": 0
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 43,
+          "grade": 19,
+          "rank": 23,
+          "appearances": {
+            "year": 6,
+            "halfYear": 4,
+            "threeMonths": 4
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 19,
+          "grade": 20,
+          "rank": 24,
+          "appearances": {
+            "year": 6,
+            "halfYear": 4,
+            "threeMonths": 2
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 9,
+          "grade": 21,
+          "rank": 25,
+          "appearances": {
+            "year": 6,
+            "halfYear": 4,
+            "threeMonths": 1
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 23,
+          "grade": 22,
+          "rank": 26,
+          "appearances": {
+            "year": 6,
+            "halfYear": 3,
+            "threeMonths": 3
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 7,
+          "grade": 23,
+          "rank": 27,
+          "appearances": {
+            "year": 6,
+            "halfYear": 3,
+            "threeMonths": 2
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 29,
+          "grade": 24,
+          "rank": 28,
+          "appearances": {
+            "year": 6,
+            "halfYear": 3,
+            "threeMonths": 1
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 10,
+          "grade": 25,
+          "rank": 29,
+          "appearances": {
+            "year": 6,
+            "halfYear": 2,
+            "threeMonths": 2
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 26,
+          "grade": 26,
+          "rank": 30,
+          "appearances": {
+            "year": 6,
+            "halfYear": 2,
+            "threeMonths": 1
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 33,
+          "grade": 26,
+          "rank": 30,
+          "appearances": {
+            "year": 6,
+            "halfYear": 2,
+            "threeMonths": 1
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 35,
+          "grade": 26,
+          "rank": 30,
+          "appearances": {
+            "year": 6,
+            "halfYear": 2,
+            "threeMonths": 1
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 39,
+          "grade": 26,
+          "rank": 30,
+          "appearances": {
+            "year": 6,
+            "halfYear": 2,
+            "threeMonths": 1
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 8,
+          "grade": 27,
+          "rank": 34,
+          "appearances": {
+            "year": 6,
+            "halfYear": 2,
+            "threeMonths": 0
+          },
+          "status": "candidate"
+        },
+        {
+          "number": 3,
+          "grade": 28,
+          "rank": 35,
+          "appearances": {
+            "year": 6,
+            "halfYear": 1,
+            "threeMonths": 0
+          },
+          "status": "excluded_bottom"
+        },
+        {
+          "number": 45,
+          "grade": 28,
+          "rank": 35,
+          "appearances": {
+            "year": 6,
+            "halfYear": 1,
+            "threeMonths": 0
+          },
+          "status": "excluded_bottom"
+        },
+        {
+          "number": 11,
+          "grade": 29,
+          "rank": 37,
+          "appearances": {
+            "year": 5,
+            "halfYear": 4,
+            "threeMonths": 3
+          },
+          "status": "excluded_bottom"
+        },
+        {
+          "number": 6,
+          "grade": 30,
+          "rank": 38,
+          "appearances": {
+            "year": 5,
+            "halfYear": 3,
+            "threeMonths": 1
+          },
+          "status": "excluded_bottom"
+        },
+        {
+          "number": 12,
+          "grade": 30,
+          "rank": 38,
+          "appearances": {
+            "year": 5,
+            "halfYear": 3,
+            "threeMonths": 1
+          },
+          "status": "excluded_bottom"
+        },
+        {
+          "number": 37,
+          "grade": 30,
+          "rank": 38,
+          "appearances": {
+            "year": 5,
+            "halfYear": 3,
+            "threeMonths": 1
+          },
+          "status": "excluded_bottom"
+        },
+        {
+          "number": 40,
+          "grade": 31,
+          "rank": 41,
+          "appearances": {
+            "year": 5,
+            "halfYear": 2,
+            "threeMonths": 1
+          },
+          "status": "excluded_bottom"
+        },
+        {
+          "number": 17,
+          "grade": 32,
+          "rank": 42,
+          "appearances": {
+            "year": 5,
+            "halfYear": 2,
+            "threeMonths": 0
+          },
+          "status": "excluded_bottom"
+        },
+        {
+          "number": 5,
+          "grade": 33,
+          "rank": 43,
+          "appearances": {
+            "year": 5,
+            "halfYear": 1,
+            "threeMonths": 1
+          },
+          "status": "excluded_bottom"
+        },
+        {
+          "number": 21,
+          "grade": 34,
+          "rank": 44,
+          "appearances": {
+            "year": 4,
+            "halfYear": 2,
+            "threeMonths": 1
+          },
+          "status": "excluded_bottom"
+        },
+        {
+          "number": 14,
+          "grade": 35,
+          "rank": 45,
+          "appearances": {
+            "year": 3,
+            "halfYear": 2,
+            "threeMonths": 0
+          },
+          "status": "excluded_bottom"
+        }
+      ]
     }
   ]
 }
