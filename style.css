@@ -148,3 +148,7 @@
 
 /* Separate number reduction from the recommendation feature card. */
 .reductionPanel{padding:0;overflow:hidden}.reductionPanel>#reductionAccordion{margin:0;border:0;border-radius:22px;background:transparent}.reductionPanel #reductionToggle{padding:16px 18px}.reductionPanel #reductionBody{padding:14px 16px 16px;border-top:1px solid rgba(124,58,237,.12)}
+
+
+/* Recommendation card opens on demand, keeping its set-count selector available. */
+.recommendAccordionHead{justify-content:space-between;gap:10px}.recommendAccordionToggle{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;padding:10px 0;border:0;background:transparent;text-align:left;color:#111827;font-weight:850}.recommendAccordionToggle span{font-size:19px;letter-spacing:-.4px}.recommendAccordionToggle b{font-size:20px;color:#8e8e93;transition:transform .2s}.recommendAccordionToggle.open b{transform:rotate(180deg)}.recommendBody{padding-top:14px}
