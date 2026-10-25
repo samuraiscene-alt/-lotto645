@@ -172,3 +172,8 @@
 .historyYearBody{display:grid;gap:7px;padding:0 7px 7px}
 .historyMonthGroup{background:#fff}
 .historyMonthBody{display:grid;gap:7px;padding:0 7px 7px}
+
+/* Match recommendation accordion heading dimensions to the shared accordion style. */
+.recommendAccordionToggle{padding:13px 14px!important;min-height:48px}
+.recommendAccordionToggle span{font-size:16px!important;letter-spacing:0!important;font-weight:700}
+.recommendAccordionToggle b{font-size:18px}
