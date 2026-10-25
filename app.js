@@ -1177,9 +1177,28 @@ function autoCheckSaved(){
   if(!history.length){box.hidden=true;body.hidden=true;return;}
   box.hidden=false;
   const completed=history.filter(h=>sourceRows.some(r=>r.draw===h.targetDraw)).length;
+  const years=new Map();
+  history.forEach(saved=>{
+    const dateText=reductionRecordDate(saved);
+    const date=new Date(/^\\d{4}-\\d{2}-\\d{2}$/.test(dateText)?dateText+"T12:00:00":dateText||saved.savedAt||"");
+    const fallback=new Date(saved.savedAt||Date.now());
+    const year=Number.isNaN(date.getTime())?fallback.getFullYear():date.getFullYear();
+    const month=Number.isNaN(date.getTime())?fallback.getMonth()+1:date.getMonth()+1;
+    if(!years.has(year))years.set(year,new Map());
+    const months=years.get(year);
+    if(!months.has(month))months.set(month,[]);
+    months.get(month).push(saved);
+  });
+  const grouped=[...years.entries()].sort((a,b)=>b[0]-a[0]).map(([year,months])=>{
+    const yearRecords=[...months.values()].flat();
+    const monthHtml=[...months.entries()].sort((a,b)=>b[0]-a[0]).map(([month,records])=>
+      `<details class="historyMonthGroup"><summary><span>${month}월</span><b>${records.length}회차</b><i aria-hidden="true">⌄</i></summary><div class="historyMonthBody">${records.map(savedHistoryCard).join("")}</div></details>`
+    ).join("");
+    return `<details class="historyYearGroup"><summary><span>${year}년</span><b>${months.size}개월 · ${yearRecords.length}회차</b><i aria-hidden="true">⌄</i></summary><div class="historyYearBody">${monthHtml}</div></details>`;
+  }).join("");
   body.innerHTML=`
-    <div class="historyOverview"><b>회차별 저장 기록</b><span>누적 ${history.length}건 · 결과 대조 완료 ${completed}건</span></div>
-    <div class="historyList">${history.map(savedHistoryCard).join("")}</div>`;
+    <div class="historyOverview"><b>연도별 저장 기록</b><span>누적 ${history.length}회차 · 결과 대조 완료 ${completed}회차</span></div>
+    <div class="historyList">${grouped}</div>`;
   bindHistorySwipe();
 }
 
