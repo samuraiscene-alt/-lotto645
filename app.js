@@ -538,7 +538,7 @@ function renderReductionSaved(){
       }).join("");
       return `<details class="reductionMonthGroup"><summary><span>${month}월</span><b>${monthRecords.length}주 · ${monthSets}세트</b><i aria-hidden="true">⌄</i></summary><div class="reductionMonthBody">${weekHtml}</div></details>`;
     }).join("");
-    return `<details class="reductionYearGroup"><summary><span>${year}년</span><b>12개월 기록 · ${yearSets}세트</b><i aria-hidden="true">⌄</i></summary><div class="reductionYearBody">${monthHtml}</div></details>`;
+    return `<details class="reductionYearGroup"><summary><span>${year}년</span><b>${months.size}개월 기록 · ${yearSets}세트</b><i aria-hidden="true">⌄</i></summary><div class="reductionYearBody">${monthHtml}</div></details>`;
   }).join("");
   list.querySelectorAll(".reductionDeleteBtn").forEach(del=>del.onclick=()=>{
     const draw=Number(del.dataset.draw),index=Number(del.dataset.index),latest=getReductionHistory(),active=latest.records.find(item=>item.targetDraw===draw);
