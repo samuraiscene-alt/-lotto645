@@ -182,3 +182,10 @@
 .utilityPanel>summary{min-height:52px;display:flex;align-items:center;font-size:19px;line-height:1.25;letter-spacing:-.4px;font-weight:850}
 
 .utilityPanel>summary:after{margin-left:auto}
+
+/* Final alignment: prior zero-padding section rules made reduction and rarity cards shorter. */
+.recommendPanel,.reductionPanel,.rarityPanel,.backtestPanel,.utilityPanel{padding:16px!important}
+.recommendAccordionHead,.recommendAccordionToggle{min-height:52px}
+.recommendAccordionToggle,.savedInlineToggle{width:100%;min-height:52px!important;padding:0!important;box-sizing:border-box}
+.reductionPanel #reductionToggle,.rarityPanel .savedInlineToggle{padding:0!important}
+.reductionPanel #reductionAccordion,.rarityPanel>.savedInline,.backtestPanel .backtestAccordion{width:100%;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important}
