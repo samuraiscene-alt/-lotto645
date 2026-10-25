@@ -849,7 +849,8 @@
           },
           "status": "excluded_bottom"
         }
-      ]
+      ],
+      "targetDate": "2026-10-24"
     }
   ]
 }
