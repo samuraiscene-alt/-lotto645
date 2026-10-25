@@ -7,7 +7,7 @@
 <title>로또 6/45 분석기</title>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="style.css?v=20261021-copy-accents-1">
+<link rel="stylesheet" href="style.css?v=20261025-reduction-history-1">
 </head>
 <body>
 <div class="wrap">
@@ -69,7 +69,7 @@
         <button type="button" class="primary" id="reductionAutoBtn">후보군에서 자동 6개</button>
       </div>
       <button type="button" class="primary reductionPickSaveBtn" id="reductionPickSaveBtn" disabled>현재 6개 조합 저장</button>
-      <div id="reductionSaved" class="reductionSaved" hidden><div id="reductionSavedTitle" class="reductionSavedTitle"></div><div id="reductionSavedList" class="reductionSavedList"></div></div>
+      <details id="reductionSaved" class="reductionSaved" hidden><summary><span>저장한 번호 추리기 보기</span><b id="reductionSavedCount">0세트</b><i aria-hidden="true">⌄</i></summary><div class="reductionHistoryBody"><div id="reductionSavedTitle" class="reductionSavedTitle"></div><div id="reductionSavedList" class="reductionSavedList"></div></div></details>
       <p id="reductionSaveInfo" class="hint reductionSaveInfo" role="status" aria-live="polite"></p>
       <button type="button" class="gptCopyBtn" id="reductionCopyBtn">GPT 분석자료 복사</button>
     </div>
@@ -115,6 +115,6 @@
   </div>
 </div>
 </div>
-<script src="app.js?v=20261021-reduction-save-1"></script>
+<script src="app.js?v=20261025-reduction-history-1"></script>
 </body>
 </html>
