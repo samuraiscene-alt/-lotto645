@@ -1220,6 +1220,12 @@ function check(){
 
 if($("reductionOpenBtn"))$("reductionOpenBtn").onclick=()=>{$("reductionPanel").hidden=false;$("reductionPanel").scrollIntoView({behavior:"smooth",block:"start"});};
 if($("reductionCloseBtn"))$("reductionCloseBtn").onclick=()=>{$("reductionPanel").hidden=true;$("reductionOpenBtn").scrollIntoView({behavior:"smooth",block:"center"});};
+if($("recommendToggle"))$("recommendToggle").onclick=()=>{
+  const body=$("recommendBody"),open=body.hidden;
+  body.hidden=!open;
+  $("recommendToggle").classList.toggle("open",open);
+  $("recommendToggle").setAttribute("aria-expanded",String(open));
+};
 if($("reductionToggle"))$("reductionToggle").onclick=()=>{
   const body=$("reductionBody"),open=body.hidden;
   body.hidden=!open;
