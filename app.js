@@ -1296,6 +1296,12 @@ if($("recommendToggle"))$("recommendToggle").onclick=()=>{
   $("recommendToggle").classList.toggle("open",open);
   $("recommendToggle").setAttribute("aria-expanded",String(open));
 };
+if($("backtestToggle"))$("backtestToggle").onclick=()=>{
+  const body=$("backtestBody"),open=body.hidden;
+  body.hidden=!open;
+  $("backtestToggle").classList.toggle("open",open);
+  $("backtestToggle").setAttribute("aria-expanded",String(open));
+};
 if($("reductionToggle"))$("reductionToggle").onclick=()=>{
   const body=$("reductionBody"),open=body.hidden;
   body.hidden=!open;
