@@ -7,7 +7,7 @@
 <title>로또 6/45 분석기</title>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="style.css?v=20261025-monthly-recommend-history-6">
+<link rel="stylesheet" href="style.css?v=20261025-accordion-backtest-7">
 </head>
 <body>
 <div class="wrap">
@@ -93,12 +93,16 @@
 <section class="panel rarityPanel"><div id="rarityAccordion" class="savedInline"><button type="button" id="rarityToggle" class="savedInlineToggle" aria-expanded="false" aria-controls="rarityBody"><span>내 번호 희소성 분석</span><b>⌄</b></button><div id="rarityBody" class="savedInlineBody" hidden><div id="rarityGrid" class="rarityGrid"></div><div id="rarityResult" class="rarityResult empty">번호 6개를 선택하세요.</div></div></div></section>
 
 <section class="panel backtestPanel">
-  <div class="sectionHead"><div><h2>추천 전략 백테스트</h2></div></div>
-  <div class="backtestControls">
-    <button type="button" class="wheelSelect" id="backtestWheelBtn" data-wheel="backtest"><span>최근 20회</span><b>⌃⌄</b></button><select id="backtestPeriod" hidden><option value="10">최근 10회</option><option value="20" selected>최근 20회</option><option value="30">최근 30회</option></select>
-    <button class="primary" id="backtestBtn">백테스트 실행</button>
+  <div id="backtestAccordion" class="savedInline backtestAccordion">
+    <button type="button" id="backtestToggle" class="savedInlineToggle" aria-expanded="false" aria-controls="backtestBody"><span>추천 전략 백테스트</span><b>⌄</b></button>
+    <div id="backtestBody" class="savedInlineBody" hidden>
+      <div class="backtestControls">
+        <button type="button" class="wheelSelect" id="backtestWheelBtn" data-wheel="backtest"><span>최근 20회</span><b>⌃⌄</b></button><select id="backtestPeriod" hidden><option value="10">최근 10회</option><option value="20" selected>최근 20회</option><option value="30">최근 30회</option></select>
+        <button class="primary" id="backtestBtn">백테스트 실행</button>
+      </div>
+      <div id="backtestResult" class="empty">백테스트를 실행하면 1~5등 및 번호 일치 결과를 확인할 수 있습니다.</div>
+    </div>
   </div>
-  <div id="backtestResult" class="empty">백테스트를 실행하면 1~5등 및 번호 일치 결과를 확인할 수 있습니다.</div>
 </section>
 
 <details class="panel utilityPanel">
@@ -120,6 +124,6 @@
   </div>
 </div>
 </div>
-<script src="app.js?v=20261025-monthly-recommend-history-6"></script>
+<script src="app.js?v=20261025-accordion-backtest-7"></script>
 </body>
 </html>
