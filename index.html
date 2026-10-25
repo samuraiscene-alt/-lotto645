@@ -7,7 +7,7 @@
 <title>로또 6/45 분석기</title>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="style.css?v=20261025-reduction-layout-2">
+<link rel="stylesheet" href="style.css?v=20261025-recommend-accordion-3">
 </head>
 <body>
 <div class="wrap">
@@ -47,9 +47,11 @@
 </section>
 
 <section class="panel recommendPanel">
-  <div class="row"><div class="grow"><h2>종합 추천</h2></div>
+  <div class="row recommendAccordionHead">
+    <button type="button" id="recommendToggle" class="recommendAccordionToggle" aria-expanded="false" aria-controls="recommendBody"><span>종합 추천</span><b>⌄</b></button>
     <button type="button" class="wheelSelect countWheel" id="setCountWheelBtn" data-wheel="count"><span>10세트</span><b>⌃⌄</b></button><select id="setCount" hidden><option>5</option><option selected>10</option><option>20</option></select>
   </div>
+  <div id="recommendBody" class="recommendBody" hidden>
   <button type="button" class="wheelSelect strategyWheel" id="strategyWheelBtn" data-wheel="strategy"><span>종합형</span><b>⌃⌄</b></button>
   <label class="rareToggle"><span><b>희소성 체크</b></span><input id="rareMode" type="checkbox"><i class="iosSwitch" aria-hidden="true"></i></label>
   <div class="recommendActions"><button class="primary" id="generateBtn">추천번호 만들기</button><button class="secondary includeToggleBtn" id="includeToggleBtn" type="button"><span id="includeCount">고정수 0개</span></button><button class="secondary excludeToggleBtn" id="excludeToggleBtn" type="button"><span id="excludeCount">제외수 0개</span></button></div>
@@ -63,7 +65,9 @@
     <div id="savedInlineBody" class="savedInlineBody" hidden></div>
     <button type="button" id="gptCopyBtn" class="gptCopyBtn">GPT 분석자료 복사</button>
   </div>
-</section>
+</sectio
+  </div>
+</section>>
 
 <section class="panel reductionPanel">
   <div id="reductionAccordion" class="savedInline reductionAccordion">
