@@ -1,4 +1,358 @@
 {
   "schemaVersion": 1,
-  "records": []
+  "records": [
+    {
+      "schemaVersion": 1,
+      "targetDraw": 1247,
+      "baseDraw": 1246,
+      "savedAt": "2026-10-24T08:13:14.575Z",
+      "candidateSavedAt": "2026-10-24T08:13:14.575Z",
+      "windows": {
+        "year": 52,
+        "halfYear": 26,
+        "threeMonths": 13
+      },
+      "cutoff": {
+        "topShare": 0.099,
+        "bottomShare": 0.218,
+        "topTarget": 4,
+        "bottomTarget": 10
+      },
+      "candidateNumbers": [
+        28,
+        15,
+        18,
+        16,
+        24,
+        1,
+        32,
+        42,
+        44,
+        34,
+        4,
+        22,
+        20,
+        41,
+        2,
+        25,
+        36,
+        30,
+        43,
+        19,
+        9,
+        23,
+        7,
+        29,
+        10,
+        26,
+        33,
+        35,
+        39,
+        8
+      ],
+      "excluded": {
+        "top": [
+          38,
+          31,
+          27,
+          13
+        ],
+        "bottom": [
+          3,
+          45,
+          11,
+          6,
+          12,
+          37,
+          40,
+          17,
+          5,
+          21,
+          14
+        ],
+        "tieBoundaryRetained": []
+      },
+      "sets": [
+        {
+          "numbers": [
+            4,
+            19,
+            23,
+            29,
+            32,
+            36
+          ],
+          "savedAt": "2026-10-24T08:13:28.147Z"
+        },
+        {
+          "numbers": [
+            2,
+            9,
+            10,
+            28,
+            29,
+            41
+          ],
+          "savedAt": "2026-10-24T08:13:34.388Z"
+        },
+        {
+          "numbers": [
+            7,
+            16,
+            23,
+            28,
+            39,
+            44
+          ],
+          "savedAt": "2026-10-24T08:14:16.432Z"
+        },
+        {
+          "numbers": [
+            10,
+            20,
+            22,
+            30,
+            33,
+            41
+          ],
+          "savedAt": "2026-10-24T08:14:19.234Z"
+        },
+        {
+          "numbers": [
+            4,
+            26,
+            28,
+            29,
+            35,
+            36
+          ],
+          "savedAt": "2026-10-24T08:14:20.599Z"
+        },
+        {
+          "numbers": [
+            1,
+            2,
+            16,
+            18,
+            26,
+            34
+          ],
+          "savedAt": "2026-10-24T08:14:22.215Z"
+        },
+        {
+          "numbers": [
+            1,
+            8,
+            9,
+            16,
+            18,
+            29
+          ],
+          "savedAt": "2026-10-24T08:14:23.575Z"
+        },
+        {
+          "numbers": [
+            10,
+            15,
+            16,
+            22,
+            28,
+            36
+          ],
+          "savedAt": "2026-10-24T08:14:27.283Z"
+        },
+        {
+          "numbers": [
+            8,
+            16,
+            25,
+            26,
+            32,
+            34
+          ],
+          "savedAt": "2026-10-24T08:14:29.021Z"
+        },
+        {
+          "numbers": [
+            8,
+            10,
+            15,
+            20,
+            24,
+            29
+          ],
+          "savedAt": "2026-10-24T08:14:34.667Z"
+        }
+      ],
+      "result": {
+        "winning": [
+          8,
+          14,
+          21,
+          22,
+          42,
+          45
+        ],
+        "bonus": 24,
+        "candidateHits": [
+          8,
+          22,
+          42
+        ],
+        "candidateHitCount": 3,
+        "sets": [
+          {
+            "numbers": [
+              4,
+              19,
+              23,
+              29,
+              32,
+              36
+            ],
+            "savedAt": "2026-10-24T08:13:28.147Z",
+            "hits": [],
+            "hitCount": 0,
+            "bonusHit": false
+          },
+          {
+            "numbers": [
+              2,
+              9,
+              10,
+              28,
+              29,
+              41
+            ],
+            "savedAt": "2026-10-24T08:13:34.388Z",
+            "hits": [],
+            "hitCount": 0,
+            "bonusHit": false
+          },
+          {
+            "numbers": [
+              7,
+              16,
+              23,
+              28,
+              39,
+              44
+            ],
+            "savedAt": "2026-10-24T08:14:16.432Z",
+            "hits": [],
+            "hitCount": 0,
+            "bonusHit": false
+          },
+          {
+            "numbers": [
+              10,
+              20,
+              22,
+              30,
+              33,
+              41
+            ],
+            "savedAt": "2026-10-24T08:14:19.234Z",
+            "hits": [
+              22
+            ],
+            "hitCount": 1,
+            "bonusHit": false
+          },
+          {
+            "numbers": [
+              4,
+              26,
+              28,
+              29,
+              35,
+              36
+            ],
+            "savedAt": "2026-10-24T08:14:20.599Z",
+            "hits": [],
+            "hitCount": 0,
+            "bonusHit": false
+          },
+          {
+            "numbers": [
+              1,
+              2,
+              16,
+              18,
+              26,
+              34
+            ],
+            "savedAt": "2026-10-24T08:14:22.215Z",
+            "hits": [],
+            "hitCount": 0,
+            "bonusHit": false
+          },
+          {
+            "numbers": [
+              1,
+              8,
+              9,
+              16,
+              18,
+              29
+            ],
+            "savedAt": "2026-10-24T08:14:23.575Z",
+            "hits": [
+              8
+            ],
+            "hitCount": 1,
+            "bonusHit": false
+          },
+          {
+            "numbers": [
+              10,
+              15,
+              16,
+              22,
+              28,
+              36
+            ],
+            "savedAt": "2026-10-24T08:14:27.283Z",
+            "hits": [
+              22
+            ],
+            "hitCount": 1,
+            "bonusHit": false
+          },
+          {
+            "numbers": [
+              8,
+              16,
+              25,
+              26,
+              32,
+              34
+            ],
+            "savedAt": "2026-10-24T08:14:29.021Z",
+            "hits": [
+              8
+            ],
+            "hitCount": 1,
+            "bonusHit": false
+          },
+          {
+            "numbers": [
+              8,
+              10,
+              15,
+              20,
+              24,
+              29
+            ],
+            "savedAt": "2026-10-24T08:14:34.667Z",
+            "hits": [
+              8
+            ],
+            "hitCount": 1,
+            "bonusHit": true
+          }
+        ]
+      }
+    }
+  ]
 }
