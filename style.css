@@ -129,3 +129,12 @@
 #reductionToggle span,#reductionCopyBtn{color:#7c3aed}
 #reductionCopyBtn{border-color:rgba(124,58,237,.2);background:#f3efff}
 #reductionCopyBtn:active{background:#e9e0ff}
+
+
+/* Per-draw number reduction archive, kept separate from recommendation history. */
+.reductionSaved{margin-top:10px;border:1px solid rgba(124,58,237,.2);border-radius:14px;background:#faf8ff;overflow:hidden}
+.reductionSaved>summary{display:flex;align-items:center;gap:8px;list-style:none;padding:12px 13px;cursor:pointer;color:#7c3aed;font-weight:850}
+.reductionSaved>summary::-webkit-details-marker{display:none}.reductionSaved>summary span{flex:1}.reductionSaved>summary b{font-size:12px;color:#7c3aed}.reductionSaved>summary i{font-style:normal;color:#8e8e93;transition:transform .2s}.reductionSaved[open]>summary i{transform:rotate(180deg)}
+.reductionHistoryBody{padding:0 10px 10px;border-top:1px solid rgba(124,58,237,.12)}.reductionSavedTitle{padding:10px 2px 7px;font-size:12px;font-weight:800;color:#7c3aed}
+.reductionSavedList{display:grid;gap:7px}.reductionSavedDraw{border:1px solid rgba(124,58,237,.12);border-radius:12px;background:#fff;overflow:hidden}.reductionSavedDraw>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;cursor:pointer;list-style:none}.reductionSavedDraw>summary::-webkit-details-marker{display:none}.reductionSavedDraw>summary span{display:flex;align-items:center;gap:7px}.reductionSavedDraw>summary b{font-size:13px;color:#7c3aed}.reductionSavedDraw>summary small{font-size:10px;color:#7c3aed;background:#f3efff;padding:4px 6px;border-radius:999px}.reductionSavedDraw>summary em{font-style:normal;font-size:10px;color:#6b7280}.reductionSavedDrawBody{padding:0 8px 8px;border-top:1px solid rgba(124,58,237,.1)}
+.reductionCandidateArchive{margin-top:8px;padding:8px;border-radius:9px;background:#f3efff;color:#5840a8;font-size:11px;line-height:1.5}.reductionCandidateArchive small{display:block;color:#7c3aed;font-size:10px;margin-top:3px}.reductionSavedSets{display:grid;gap:5px;margin-top:7px}.reductionSavedRow{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:5px;padding:8px;border-radius:9px;background:#f7f8fa;font-size:12px;font-weight:800}.reductionSavedRow>span{min-width:0}.reductionSavedRow>span small{display:block;color:#7c3aed;font-size:9px;margin-top:2px}.reductionDeleteBtn{padding:6px 9px;font-size:11px;background:#fff0f0;color:#d93025;border-color:#f4cccc}
