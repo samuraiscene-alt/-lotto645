@@ -173,7 +173,12 @@
 .historyMonthGroup{background:#fff}
 .historyMonthBody{display:grid;gap:7px;padding:0 7px 7px}
 
-/* Match recommendation accordion heading dimensions to the shared accordion style. */
-.recommendAccordionToggle{padding:13px 14px!important;min-height:48px}
-.recommendAccordionToggle span{font-size:16px!important;letter-spacing:0!important;font-weight:700}
-.recommendAccordionToggle b{font-size:18px}
+/* Shared accordion card and heading geometry */
+.reductionAccordion,.rarityPanel>.savedInline,.backtestAccordion{margin:0;border:0;border-radius:0;background:transparent}
+.recommendAccordionToggle,.savedInlineToggle{min-height:52px;padding:0!important;border:0;border-radius:0;background:transparent;display:flex;align-items:center;justify-content:space-between;text-align:left}
+.recommendAccordionToggle span,.savedInlineToggle span{font-size:19px!important;line-height:1.25;letter-spacing:-.4px;font-weight:850}
+.recommendAccordionToggle b,.savedInlineToggle b{font-size:18px;color:#8e8e93}
+.backtestAccordion>.savedInlineBody{padding:12px 0 0;border-top:1px solid rgba(15,23,42,.07)}
+.utilityPanel>summary{min-height:52px;display:flex;align-items:center;font-size:19px;line-height:1.25;letter-spacing:-.4px;font-weight:850}
+
+.utilityPanel>summary:after{margin-left:auto}
