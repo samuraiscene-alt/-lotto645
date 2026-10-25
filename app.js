@@ -479,43 +479,72 @@ async function hydrateReductionHistoryArchive(){
 }
 function reductionRecordTemplate(state){
   const ranking=state.ranked.map(n=>({number:n,grade:state.gradeByNumber[n],rank:state.rankByNumber[n],appearances:{year:state.counts.year[n],halfYear:state.counts.half[n],threeMonths:state.counts.quarter[n]},status:state.candidates.includes(n)?"candidate":state.topExcluded.includes(n)?"excluded_top":state.bottomExcluded.includes(n)?"excluded_bottom":"tie_boundary_retained"}));
-  return {schemaVersion:1,targetDraw:state.baseDraw?state.baseDraw+1:null,baseDraw:state.baseDraw,savedAt:new Date().toISOString(),candidateSavedAt:null,windows:{year:state.windows.year,halfYear:state.windows.half,threeMonths:state.windows.quarter},cutoff:{topShare:state.topShare,bottomShare:state.bottomShare,topTarget:state.topTarget,bottomTarget:state.bottomTarget},candidateNumbers:[...state.candidates],excluded:{top:[...state.topExcluded],bottom:[...state.bottomExcluded],tieBoundaryRetained:[...state.protectedTies]},ranking,sets:[]};
+  return {schemaVersion:1,targetDraw:state.baseDraw?state.baseDraw+1:null,baseDraw:state.baseDraw,targetDate:reductionNextTargetDate(state.baseDraw),savedAt:new Date().toISOString(),candidateSavedAt:null,windows:{year:state.windows.year,halfYear:state.windows.half,threeMonths:state.windows.quarter},cutoff:{topShare:state.topShare,bottomShare:state.bottomShare,topTarget:state.topTarget,bottomTarget:state.bottomTarget},candidateNumbers:[...state.candidates],excluded:{top:[...state.topExcluded],bottom:[...state.bottomExcluded],tieBoundaryRetained:[...state.protectedTies]},ranking,sets:[]};
 }
 function reductionSavedDate(value){
   if(!value)return "";
   const date=new Date(value);
   return Number.isNaN(date.getTime())?"":date.toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
 }
+function reductionNextTargetDate(baseDraw){
+  const base=sourceRows.find(row=>row.draw===Number(baseDraw));
+  if(!base?.date)return null;
+  const date=new Date(base.date+"T12:00:00");
+  date.setDate(date.getDate()+7);
+  return [date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
+}
+function reductionRecordDate(record){
+  const actual=sourceRows.find(row=>row.draw===Number(record.targetDraw));
+  if(actual?.date)return actual.date;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(record.targetDate||""))return record.targetDate;
+  return reductionNextTargetDate(record.baseDraw)||record.savedAt||"";
+}
 function renderReductionSaved(){
   const allButton=$("reductionSaveAllBtn"),pickButton=$("reductionPickSaveBtn"),box=$("reductionSaved"),title=$("reductionSavedTitle"),list=$("reductionSavedList"),countLabel=$("reductionSavedCount");
   if(!allButton||!pickButton||!box||!title||!list)return;
-  const history=getReductionHistory();
-  const targetDraw=reductionState?.baseDraw?reductionState.baseDraw+1:null;
+  const history=getReductionHistory(),targetDraw=reductionState?.baseDraw?reductionState.baseDraw+1:null;
   const currentRecord=history.records.find(item=>item.targetDraw===targetDraw);
-  const records=history.records.filter(item=>item.candidateSavedAt||(item.sets||[]).length).sort((a,b)=>(b.targetDraw||0)-(a.targetDraw||0));
+  const records=history.records.filter(item=>item.candidateSavedAt||(item.sets||[]).length).sort((a,b)=>reductionRecordDate(b).localeCompare(reductionRecordDate(a)));
   const totalSets=records.reduce((sum,item)=>sum+(item.sets||[]).length,0);
   allButton.disabled=!reductionState||!!currentRecord?.candidateSavedAt;
   allButton.textContent=currentRecord?.candidateSavedAt?"후보군 전체 저장 완료":"후보군 전체 저장";
   pickButton.disabled=!reductionState||reductionSelected.length!==6;
   box.hidden=!records.length;
   if(countLabel)countLabel.textContent=totalSets+"세트";
-  title.textContent="회차별 저장 기록 · 누적 "+totalSets+"세트 / "+records.length+"회차";
-  list.innerHTML=records.map(record=>{
-    const sets=record.sets||[],draw=record.targetDraw||"다음",savedDate=reductionSavedDate(record.candidateSavedAt||record.savedAt);
-    const pool=(record.candidateNumbers||[]).join(" · ");
-    return `<details class="reductionSavedDraw">
-      <summary><span><b>${draw}회</b><small>${sets.length}개 조합${record.candidateSavedAt?" · 후보군 저장":""}</small></span><em>${savedDate}</em></summary>
-      <div class="reductionSavedDrawBody">
-        ${record.candidateSavedAt?`<div class="reductionCandidateArchive"><b>저장 후보군</b> ${pool||"자료 없음"}<small>저장 ${reductionSavedDate(record.candidateSavedAt)}</small></div>`:""}
-        <div class="reductionSavedSets">${sets.map((item,index)=>`<div class="reductionSavedRow"><b>${index+1}.</b><span>${(item.numbers||[]).join(" · ")}<small>저장 ${reductionSavedDate(item.savedAt)}</small></span><button type="button" class="reductionDeleteBtn" data-draw="${draw}" data-index="${index}" aria-label="${draw}회 저장 번호 ${index+1} 삭제">삭제</button></div>`).join("")}</div>
-      </div>
-    </details>`;
+  title.textContent="연도별 저장 기록 · 누적 "+totalSets+"세트 / "+records.length+"주";
+  const years=new Map();
+  records.forEach(record=>{
+    const dateText=reductionRecordDate(record),date=new Date(dateText+"T12:00:00");
+    const year=Number.isNaN(date.getTime())?new Date(record.savedAt||Date.now()).getFullYear():date.getFullYear();
+    const month=Number.isNaN(date.getTime())?0:date.getMonth()+1;
+    if(!years.has(year))years.set(year,new Map());
+    const months=years.get(year);
+    if(!months.has(month))months.set(month,[]);
+    months.get(month).push(record);
+  });
+  list.innerHTML=[...years.entries()].sort((a,b)=>b[0]-a[0]).map(([year,months])=>{
+    const yearRecords=[...months.values()].flat(),yearSets=yearRecords.reduce((sum,r)=>sum+(r.sets||[]).length,0);
+    const monthHtml=[...months.entries()].sort((a,b)=>b[0]-a[0]).map(([month,monthRecords])=>{
+      const monthSets=monthRecords.reduce((sum,r)=>sum+(r.sets||[]).length,0);
+      const weekHtml=monthRecords.map(record=>{
+        const sets=record.sets||[],draw=record.targetDraw||"다음",dateText=reductionRecordDate(record),savedDate=reductionSavedDate(record.candidateSavedAt||record.savedAt),pool=(record.candidateNumbers||[]).join(" · ");
+        return `<details class="reductionSavedDraw">
+          <summary><span><b>${draw}회</b><small>${sets.length}개 조합${record.candidateSavedAt?" · 후보군 저장":""}</small></span><em>${dateText}</em></summary>
+          <div class="reductionSavedDrawBody">
+            ${record.candidateSavedAt?`<div class="reductionCandidateArchive"><b>저장 후보군</b> ${pool||"자료 없음"}<small>저장 ${reductionSavedDate(record.candidateSavedAt)}</small></div>`:""}
+            <div class="reductionSavedSets">${sets.map((item,index)=>`<div class="reductionSavedRow"><b>${index+1}.</b><span>${(item.numbers||[]).join(" · ")}<small>저장 ${reductionSavedDate(item.savedAt)}</small></span><button type="button" class="reductionDeleteBtn" data-draw="${draw}" data-index="${index}" aria-label="${draw}회 저장 번호 ${index+1} 삭제">삭제</button></div>`).join("")}</div>
+          </div>
+        </details>`;
+      }).join("");
+      return `<details class="reductionMonthGroup"><summary><span>${month}월</span><b>${monthRecords.length}주 · ${monthSets}세트</b><i aria-hidden="true">⌄</i></summary><div class="reductionMonthBody">${weekHtml}</div></details>`;
+    }).join("");
+    return `<details class="reductionYearGroup"><summary><span>${year}년</span><b>12개월 기록 · ${yearSets}세트</b><i aria-hidden="true">⌄</i></summary><div class="reductionYearBody">${monthHtml}</div></details>`;
   }).join("");
   list.querySelectorAll(".reductionDeleteBtn").forEach(del=>del.onclick=()=>{
     const draw=Number(del.dataset.draw),index=Number(del.dataset.index),latest=getReductionHistory(),active=latest.records.find(item=>item.targetDraw===draw);
     if(!active)return;
     active.sets.splice(index,1);
-    if(!active.sets.length&&!active.candidateSavedAt) latest.records=latest.records.filter(item=>item!==active);
+    if(!active.sets.length&&!active.candidateSavedAt)latest.records=latest.records.filter(item=>item!==active);
     saveReductionHistory(latest);
     $("reductionSaveInfo").textContent=draw+"회 저장 조합을 삭제했어.";
     renderReductionSaved();
