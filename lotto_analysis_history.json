@@ -590,6 +590,151 @@
         "winningAverageWeightRank": 22.5,
         "winningTop15Count": 2
       }
+    },
+    {
+      "targetDraw": 1247,
+      "baseDraw": 1246,
+      "savedAt": "2026-10-23T12:50:41.956Z",
+      "source": "app",
+      "settings": {
+        "strategy": "balanced",
+        "period": "52",
+        "rareMode": false,
+        "fixed": [],
+        "excluded": [],
+        "setCount": 10
+      },
+      "sets": [
+        {
+          "numbers": [
+            1,
+            11,
+            24,
+            26,
+            27,
+            44
+          ],
+          "rarity": 92
+        },
+        {
+          "numbers": [
+            11,
+            12,
+            14,
+            23,
+            26,
+            41
+          ],
+          "rarity": 81
+        },
+        {
+          "numbers": [
+            8,
+            9,
+            12,
+            24,
+            33,
+            36
+          ],
+          "rarity": 21
+        },
+        {
+          "numbers": [
+            4,
+            12,
+            13,
+            27,
+            29,
+            41
+          ],
+          "rarity": 71
+        },
+        {
+          "numbers": [
+            3,
+            10,
+            23,
+            28,
+            35,
+            38
+          ],
+          "rarity": 21
+        },
+        {
+          "numbers": [
+            1,
+            8,
+            21,
+            24,
+            35,
+            45
+          ],
+          "rarity": 21
+        },
+        {
+          "numbers": [
+            13,
+            16,
+            20,
+            25,
+            33,
+            38
+          ],
+          "rarity": 17
+        },
+        {
+          "numbers": [
+            4,
+            7,
+            25,
+            27,
+            28,
+            41
+          ],
+          "rarity": 92
+        },
+        {
+          "numbers": [
+            13,
+            17,
+            22,
+            23,
+            32,
+            38
+          ],
+          "rarity": 44
+        },
+        {
+          "numbers": [
+            13,
+            14,
+            16,
+            31,
+            41,
+            43
+          ],
+          "rarity": 89
+        }
+      ],
+      "result": {
+        "winning": [
+          8,
+          14,
+          21,
+          22,
+          42,
+          45
+        ],
+        "bonus": 24,
+        "bestHits": 3,
+        "averageHits": 0.7,
+        "excludedWinning": [],
+        "missingWinning": [
+          42
+        ],
+        "winningAverageWeightRank": 32.2,
+        "winningTop15Count": 2
+      }
     }
   ]
 }
