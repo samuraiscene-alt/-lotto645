@@ -160,3 +160,15 @@
 .recommendControls>button{width:100%;min-width:0;min-height:58px;flex:none;padding:10px 8px;font-size:15px;line-height:1.25}
 .recommendControls>.wheelSelect{display:flex;align-items:center;justify-content:space-between;text-align:left}
 @media(max-width:380px){.recommendControls>button{font-size:14px}}
+
+/* Saved recommendation records grouped by year and month. */
+.historyYearGroup,.historyMonthGroup{border:1px solid rgba(15,23,42,.08);border-radius:15px;background:#f7f8fa;overflow:hidden}
+.historyYearGroup>summary,.historyMonthGroup>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;cursor:pointer;list-style:none;font-weight:800}
+.historyYearGroup>summary::-webkit-details-marker,.historyMonthGroup>summary::-webkit-details-marker{display:none}
+.historyYearGroup>summary span,.historyMonthGroup>summary span{font-size:16px}
+.historyYearGroup>summary b,.historyMonthGroup>summary b{font-size:12px;color:#6b7280}
+.historyYearGroup>summary i,.historyMonthGroup>summary i{font-style:normal;color:#8e8e93;transition:transform .2s}
+.historyYearGroup[open]>summary i,.historyMonthGroup[open]>summary i{transform:rotate(180deg)}
+.historyYearBody{display:grid;gap:7px;padding:0 7px 7px}
+.historyMonthGroup{background:#fff}
+.historyMonthBody{display:grid;gap:7px;padding:0 7px 7px}
