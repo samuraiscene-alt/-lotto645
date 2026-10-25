@@ -10,6 +10,7 @@ let rarityNumbers = [];
 const $ = id => document.getElementById(id);
 const STORAGE_KEY = "lotto645_saved_sets_v2";
 const HISTORY_KEY = "lotto645_recommendation_history_v1";
+const HISTORY_DELETED_KEY = "lotto645_recommendation_history_deleted_v1";
 const PERFORMANCE_MIN_DRAWS = 3;
 const PERFORMANCE_MAX_ADJUST = 0.08;
 const RECOVERY_1243_KEY = "lotto645_recovery_1243_v1";
@@ -224,6 +225,7 @@ async function loadAutoData(){
     analyze();
     await hydrateReductionHistoryArchive();
     renderReduction();
+    await hydrateRecommendationHistoryArchive();
 
     setStatus("ok","최신 데이터 확인 완료");
 
@@ -922,6 +924,52 @@ function saveHistory(history){
   localStorage.setItem(HISTORY_KEY,JSON.stringify(history));
 }
 
+async function hydrateRecommendationHistoryArchive(){
+  try{
+    const response=await fetch("./lotto_analysis_history.json?t="+Date.now(),{cache:"no-store"});
+    if(!response.ok) return;
+    const archive=await response.json();
+    if(!Array.isArray(archive.records)) return;
+    const deleted=new Set(JSON.parse(localStorage.getItem(HISTORY_DELETED_KEY)||"[]"));
+    const history=getHistory();
+    const existing=new Set(history.map(item=>`${item.targetDraw}:${historySource(item)}`));
+    let changed=false;
+    for(const record of archive.records){
+      const source=record.source==="gpt"?"gpt":"app";
+      const key=`${record.targetDraw}:${source}`;
+      if(!record.targetDraw||deleted.has(key)||existing.has(key)||!Array.isArray(record.sets)) continue;
+      const sets=record.sets.map(set=>Array.isArray(set)?set:(set?.numbers||[])).filter(set=>set.length===6);
+      if(!sets.length) continue;
+      const settings=record.settings||{};
+      const normalized={
+        savedAt:record.savedAt||null,
+        baseDraw:record.baseDraw||record.targetDraw-1,
+        targetDraw:record.targetDraw,
+        source,
+        sets,
+        settings:{
+          strategy:settings.strategy||"balanced",
+          period:settings.period==null?null:String(settings.period),
+          rareMode:!!settings.rareMode,
+          fixed:[...(settings.fixed||[])],
+          excluded:[...(settings.excluded||[])],
+          setCount:settings.setCount||sets.length,
+          rarity:record.sets.map(set=>set?.rarity??null)
+        }
+      };
+      history.push(normalized);
+      existing.add(key);
+      changed=true;
+    }
+    if(changed){
+      history.sort((a,b)=>(a.targetDraw||0)-(b.targetDraw||0));
+      saveHistory(history);
+    }
+  }catch(error){
+    console.warn("추천 기록 보관본을 불러오지 못했습니다.",error);
+  }
+}
+
 function recommendationSnapshot(){
   return {
     strategy:recommendationStrategy,
@@ -1137,6 +1185,9 @@ function autoCheckSaved(){
 
 function deleteHistoryDraw(draw,source){
   if(draw===1243&&source==="app") localStorage.setItem(RECOVERY_1243_KEY,"deleted");
+  const deleted=new Set(JSON.parse(localStorage.getItem(HISTORY_DELETED_KEY)||"[]"));
+  deleted.add(`${draw}:${source}`);
+  localStorage.setItem(HISTORY_DELETED_KEY,JSON.stringify([...deleted]));
   let history=getHistory().filter(h=>!(h.targetDraw===draw&&historySource(h)===source));
   saveHistory(history);
   const current=getSaved();
