@@ -8,6 +8,21 @@ let rareMode = false;
 let rarityNumbers = [];
 
 const $ = id => document.getElementById(id);
+
+let saveSuccessTimer = null;
+function showSaveSuccess(){
+  const overlay=$("saveSuccessOverlay");
+  if(!overlay)return;
+  clearTimeout(saveSuccessTimer);
+  overlay.classList.remove("show");
+  overlay.setAttribute("aria-hidden","false");
+  void overlay.offsetWidth;
+  overlay.classList.add("show");
+  saveSuccessTimer=setTimeout(()=>{
+    overlay.classList.remove("show");
+    overlay.setAttribute("aria-hidden","true");
+  },950);
+}
 const STORAGE_KEY = "lotto645_saved_sets_v2";
 const HISTORY_KEY = "lotto645_recommendation_history_v1";
 const HISTORY_DELETED_KEY = "lotto645_recommendation_history_deleted_v1";
@@ -575,6 +590,7 @@ function saveReductionPick(){
   history.records.sort((a,b)=>(a.targetDraw||0)-(b.targetDraw||0));
   saveReductionHistory(history);
   $("reductionSaveInfo").textContent=`✓ ${targetDraw||"다음"}회 후보군과 번호 조합 저장 완료`;
+  showSaveSuccess();
   renderReductionSaved();
 }
 function reductionHistoryForExport(){
@@ -1019,6 +1035,7 @@ function saveGenerated(){
   history.sort((a,b)=>(a.targetDraw||0)-(b.targetDraw||0));
   saveHistory(history);
   $("saveInfo").textContent=`✓ ${payload.targetDraw||"다음"}회 추천번호 저장 완료 · 누적 ${history.length}회`;
+  showSaveSuccess();
   autoCheckSaved();
   $("savedInlineBody").hidden=false;
   $("savedInlineToggle").classList.add("open");
