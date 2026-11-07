@@ -189,3 +189,16 @@
 .recommendAccordionToggle,.savedInlineToggle{width:100%;min-height:52px!important;padding:0!important;box-sizing:border-box}
 .reductionPanel #reductionToggle,.rarityPanel .savedInlineToggle{padding:0!important}
 .reductionPanel #reductionAccordion,.rarityPanel>.savedInline,.backtestPanel .backtestAccordion{width:100%;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important}
+
+/* Version label and shared save confirmation */
+.brandText{min-width:0}
+.appVersion{margin-left:auto;align-self:flex-end;padding-bottom:5px;color:var(--sub);font-size:9px;line-height:1;white-space:nowrap}
+.saveSuccessOverlay{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .18s ease,visibility .18s ease}
+.saveSuccessOverlay.show{opacity:1;visibility:visible}
+.saveSuccessCircle{width:clamp(96px,25vw,116px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:#34c759;box-shadow:0 14px 38px rgba(20,130,55,.3);transform:scale(.55);transition:transform .28s cubic-bezier(.2,.9,.25,1.25)}
+.saveSuccessOverlay.show .saveSuccessCircle{transform:scale(1)}
+.saveSuccessCircle svg{width:62%;height:62%;overflow:visible}
+.saveSuccessCircle path{fill:none;stroke:#fff;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100}
+.saveSuccessOverlay.show .saveSuccessCircle path{animation:saveSuccessCheck .38s .12s ease-out forwards}
+@keyframes saveSuccessCheck{to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.saveSuccessOverlay,.saveSuccessCircle{transition:none!important}.saveSuccessOverlay.show .saveSuccessCircle path{animation:none;stroke-dashoffset:0}}
